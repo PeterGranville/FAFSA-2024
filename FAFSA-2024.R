@@ -891,6 +891,26 @@ rm(i, nGroups)
 nTiles20 <- full_join(x=nTiles, y=rankOutputs, by="ZCTA5")
 rm(nTiles)
 
+nGroups <- 10
+for(i in (2:ncol(rankInputs))){
+  
+  tempTiles <- rankInputs %>% select(`ZCTA5`, names(rankInputs)[i])
+  names(tempTiles)[2] <- "InterestVar"
+  tempTiles <- tempTiles %>% mutate(`nTile` = ntile(`InterestVar`, nGroups)) %>% select(-(`InterestVar`))
+  names(tempTiles)[2] <- paste("Groups: ", names(rankInputs)[i], sep="")
+  if(i == 2){
+    nTiles <- tempTiles
+  }else{
+    nTiles <- full_join(x=nTiles, y=tempTiles, by="ZCTA5")
+  }
+  rm(tempTiles)
+  
+}
+rm(i, nGroups)
+nTiles10 <- full_join(x=nTiles, y=rankOutputs, by="ZCTA5")
+rm(nTiles)
+
+
 nGroups <- 5
 for(i in (2:ncol(rankInputs))){
   
@@ -952,17 +972,19 @@ function1 <- function(tilesDF, tilesVar, printData){
   newTiles <- newTiles %>% select(
     `Applications completed through April 30, 2024`, 
     `Applications completed through April 30, 2023`, 
+    `Grade 12 students, 2022-23`,
     all_of(tilesVar)
   ) %>% rename(
     `InterestVar` = tilesVar
   ) 
   analysis1 <- aggregate(data=newTiles, cbind(
     `Applications completed through April 30, 2024`, 
-    `Applications completed through April 30, 2023` 
+    `Applications completed through April 30, 2023`, 
+    `Grade 12 students, 2022-23`
   ) ~ `InterestVar`, FUN=sum) %>% mutate(
     `Decline in YoY completions` = (`Applications completed through April 30, 2024` - `Applications completed through April 30, 2023`) / `Applications completed through April 30, 2023`
   ) 
-  figA <- ggplot(data=analysis1, mapping=aes(x=`InterestVar`, y=`Decline in YoY completions`)) + geom_bar(stat="identity", width=0.1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.5, 0)) + labs(x=tilesVar)
+  figA <- ggplot(data=analysis1, mapping=aes(x=`InterestVar`, y=`Decline in YoY completions`)) + geom_bar(stat="identity", width=0.1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.4, 0)) + labs(x=tilesVar)
   if(printData==TRUE){tempDF <- analysis1}
   return(figA)
   rm(analysis1, newTiles, figA)
@@ -991,6 +1013,28 @@ figA16 <- function1(nTiles20, "Groups: Associate's or higher share", FALSE)
 figA17 <- function1(nTiles20, "Groups: Households receiving SNAP share", FALSE)
 figA18 <- function1(nTiles20, "Groups: Share of population in poverty", FALSE)
 figA19 <- function1(nTiles20, "Groups: Average household income", FALSE)
+
+# For report: 
+figA12
+figA15
+figA18
+figA12.stats <- (function1(nTiles5, "Groups: Black or Latino share", FALSE))$data
+figA15.stats <- (function1(nTiles5, "Groups: No college share", FALSE))$data
+figA18.stats <- (function1(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+
+# For figure alternatives: 
+# figA12.5 <- (function1(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figA15.5 <- (function1(nTiles5, "Groups: No college share", FALSE))$data
+# figA18.5 <- (function1(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figA12.10 <- (function1(nTiles10, "Groups: Black or Latino share", FALSE))$data
+# figA15.10 <- (function1(nTiles10, "Groups: No college share", FALSE))$data
+# figA18.10 <- (function1(nTiles10, "Groups: Share of population in poverty", FALSE))$data
+# figA12.20 <- (function1(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figA15.20 <- (function1(nTiles20, "Groups: No college share", FALSE))$data
+# figA18.20 <- (function1(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figA12.100 <- (function1(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figA15.100 <- (function1(nTiles100, "Groups: No college share", FALSE))$data
+# figA18.100 <- (function1(nTiles100, "Groups: Share of population in poverty", FALSE))$data
 
 #### End #### 
 
@@ -1042,6 +1086,28 @@ figB16 <- function2(nTiles20, "Groups: Associate's or higher share", FALSE)
 figB17 <- function2(nTiles20, "Groups: Households receiving SNAP share", FALSE)
 figB18 <- function2(nTiles20, "Groups: Share of population in poverty", FALSE)
 figB19 <- function2(nTiles20, "Groups: Average household income", FALSE)
+
+# For report: 
+figB12
+figB15
+figB18
+figB12.stats <- (function2(nTiles5, "Groups: Black or Latino share", FALSE))$data
+figB15.stats <- (function2(nTiles5, "Groups: No college share", FALSE))$data
+figB18.stats <- (function2(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+
+# For figure alternatives: 
+# figB12.5 <- (function2(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figB15.5 <- (function2(nTiles5, "Groups: No college share", FALSE))$data
+# figB18.5 <- (function2(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figB12.10 <- (function2(nTiles10, "Groups: Black or Latino share", FALSE))$data
+# figB15.10 <- (function2(nTiles10, "Groups: No college share", FALSE))$data
+# figB18.10 <- (function2(nTiles10, "Groups: Share of population in poverty", FALSE))$data
+# figB12.20 <- (function2(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figB15.20 <- (function2(nTiles20, "Groups: No college share", FALSE))$data
+# figB18.20 <- (function2(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figB12.100 <- (function2(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figB15.100 <- (function2(nTiles100, "Groups: No college share", FALSE))$data
+# figB18.100 <- (function2(nTiles100, "Groups: Share of population in poverty", FALSE))$data
 
 #### End #### 
 
@@ -1121,6 +1187,25 @@ figC17 <- function3(nTiles5, "Groups: Households receiving SNAP share", FALSE)
 figC18 <- function3(nTiles5, "Groups: Share of population in poverty", FALSE)
 figC19 <- function3(nTiles5, "Groups: Average household income", FALSE)
 
+# For report: 
+figC12
+figC15
+figC18
+
+# For figure alternatives: 
+# figC12.5 <- (function3(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figC15.5 <- (function3(nTiles5, "Groups: No college share", FALSE))$data
+# figC18.5 <- (function3(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figC12.10 <- (function3(nTiles10, "Groups: Black or Latino share", FALSE))$data
+# figC15.10 <- (function3(nTiles10, "Groups: No college share", FALSE))$data
+# figC18.10 <- (function3(nTiles10, "Groups: Share of population in poverty", FALSE))$data
+# figC12.20 <- (function3(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figC15.20 <- (function3(nTiles20, "Groups: No college share", FALSE))$data
+# figC18.20 <- (function3(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figC12.100 <- (function3(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figC15.100 <- (function3(nTiles100, "Groups: No college share", FALSE))$data
+# figC18.100 <- (function3(nTiles100, "Groups: Share of population in poverty", FALSE))$data
+
 #### End #### 
 
 #### Charts of the share of submitted FAFSAs that are incomplete (20-tiles) (function4) ####
@@ -1171,6 +1256,28 @@ figD16 <- function4(nTiles20, "Groups: Associate's or higher share", FALSE)
 figD17 <- function4(nTiles20, "Groups: Households receiving SNAP share", FALSE)
 figD18 <- function4(nTiles20, "Groups: Share of population in poverty", FALSE)
 figD19 <- function4(nTiles20, "Groups: Average household income", FALSE)
+
+# For report: 
+figD12
+figD15
+figD18
+figD12.stats <- (function4(nTiles5, "Groups: Black or Latino share", FALSE))$data
+figD15.stats <- (function4(nTiles5, "Groups: No college share", FALSE))$data
+figD18.stats <- (function4(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+
+# For figure alternatives: 
+# figD12.5 <- (function4(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figD15.5 <- (function4(nTiles5, "Groups: No college share", FALSE))$data
+# figD18.5 <- (function4(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figD12.10 <- (function4(nTiles10, "Groups: Black or Latino share", FALSE))$data
+# figD15.10 <- (function4(nTiles10, "Groups: No college share", FALSE))$data
+# figD18.10 <- (function4(nTiles10, "Groups: Share of population in poverty", FALSE))$data
+# figD12.20 <- (function4(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figD15.20 <- (function4(nTiles20, "Groups: No college share", FALSE))$data
+# figD18.20 <- (function4(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figD12.100 <- (function4(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figD15.100 <- (function4(nTiles100, "Groups: No college share", FALSE))$data
+# figD18.100 <- (function4(nTiles100, "Groups: Share of population in poverty", FALSE))$data
 
 #### End #### 
 
@@ -1656,9 +1763,9 @@ rm(nTiles)
 
 #### Charts of YOY decrease in completions with alternative comparison years (20-tiles) (function5) ####
 
-function5 <- function(tilesVar, printData){
+function5 <- function(tilesDF, tilesVar, printData){
   
-  newAltTiles <- altnTiles20
+  newAltTiles <- tilesDF
   
   newAltTiles <- newAltTiles %>% select(
     `Applications completed through April 30, 2024`, 
@@ -1675,7 +1782,7 @@ function5 <- function(tilesVar, printData){
   ) ~ `InterestVar`, FUN=sum) %>% mutate(
     `Decline in YoY completions` = (`Applications completed through April 30, 2024` - `Comparison completions`) / `Comparison completions`
   ) 
-  figE <- ggplot(data=altAnalysis1, mapping=aes(x=`InterestVar`, y=`Decline in YoY completions`)) + geom_bar(stat="identity", width=0.1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.5, 0)) + labs(x=tilesVar)
+  figE <- ggplot(data=altAnalysis1, mapping=aes(x=`InterestVar`, y=`Decline in YoY completions`)) + geom_bar(stat="identity", width=0.1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.4, 0)) + labs(x=tilesVar)
   if(printData==TRUE){tempDF <- altAnalysis1}
   return(figE)
   rm(altAnalysis1, newAltTiles, figE)
@@ -1685,25 +1792,44 @@ function5 <- function(tilesVar, printData){
 
 #### Run function5 ####
 
-figE1 <- function5("Groups: Native-born share", FALSE)
-figE2 <- function5("Groups: Foreign-born share: AAOA", FALSE)
-figE3 <- function5("Groups: Limited English share", FALSE)
-figE4 <- function5("Groups: White share", FALSE)
-figE5 <- function5("Groups: Black share", FALSE)
-figE6 <- function5("Groups: Hispanic or Latino share", FALSE)
-figE7 <- function5("Groups: Native American share", FALSE)
-figE8 <- function5("Groups: Asian share", FALSE)
-figE9 <- function5("Groups: Pacific Islander share", FALSE)
-figE10 <- function5("Groups: Other race share", FALSE)
-figE11 <- function5("Groups: Two or more races share", FALSE)
-figE12 <- function5("Groups: Black or Latino share", FALSE)
-figE13 <- function5("Groups: Black, Latino, or Native American share", FALSE)
-figE14 <- function5("Groups: Black, Latino, Native American, or Pacific Islander share", FALSE)
-figE15 <- function5("Groups: No college share", FALSE)
-figE16 <- function5("Groups: Associate's or higher share", FALSE)
-figE17 <- function5("Groups: Households receiving SNAP share", FALSE)
-figE18 <- function5("Groups: Share of population in poverty", FALSE)
-figE19 <- function5("Groups: Average household income", FALSE)
+figE1 <- function5(altnTiles20, "Groups: Native-born share", FALSE)
+figE2 <- function5(altnTiles20, "Groups: Foreign-born share: AAOA", FALSE)
+figE3 <- function5(altnTiles20, "Groups: Limited English share", FALSE)
+figE4 <- function5(altnTiles20, "Groups: White share", FALSE)
+figE5 <- function5(altnTiles20, "Groups: Black share", FALSE)
+figE6 <- function5(altnTiles20, "Groups: Hispanic or Latino share", FALSE)
+figE7 <- function5(altnTiles20, "Groups: Native American share", FALSE)
+figE8 <- function5(altnTiles20, "Groups: Asian share", FALSE)
+figE9 <- function5(altnTiles20, "Groups: Pacific Islander share", FALSE)
+figE10 <- function5(altnTiles20, "Groups: Other race share", FALSE)
+figE11 <- function5(altnTiles20, "Groups: Two or more races share", FALSE)
+figE12 <- function5(altnTiles20, "Groups: Black or Latino share", FALSE)
+figE13 <- function5(altnTiles20, "Groups: Black, Latino, or Native American share", FALSE)
+figE14 <- function5(altnTiles20, "Groups: Black, Latino, Native American, or Pacific Islander share", FALSE)
+figE15 <- function5(altnTiles20, "Groups: No college share", FALSE)
+figE16 <- function5(altnTiles20, "Groups: Associate's or higher share", FALSE)
+figE17 <- function5(altnTiles20, "Groups: Households receiving SNAP share", FALSE)
+figE18 <- function5(altnTiles20, "Groups: Share of population in poverty", FALSE)
+figE19 <- function5(altnTiles20, "Groups: Average household income", FALSE)
+
+# For report: 
+figE12
+figE15
+figE18
+figE12.stats <- (function5(altnTiles5, "Groups: Black or Latino share", FALSE))$data
+figE15.stats <- (function5(altnTiles5, "Groups: No college share", FALSE))$data
+figE18.stats <- (function5(altnTiles5, "Groups: Share of population in poverty", FALSE))$data
+
+# For figure alternatives: 
+# figE12.5 <- (function5(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figE15.5 <- (function5(nTiles5, "Groups: No college share", FALSE))$data
+# figE18.5 <- (function5(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figE12.20 <- (function5(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figE15.20 <- (function5(nTiles20, "Groups: No college share", FALSE))$data
+# figE18.20 <- (function5(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figE12.100 <- (function5(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figE15.100 <- (function5(nTiles100, "Groups: No college share", FALSE))$data
+# figE18.100 <- (function5(nTiles100, "Groups: Share of population in poverty", FALSE))$data
 
 #### End #### 
 
@@ -2507,6 +2633,22 @@ figF16 <- function6("Groups: Associate's or higher share", FALSE)
 figF17 <- function6("Groups: Households receiving SNAP share", FALSE)
 figF18 <- function6("Groups: Share of population in poverty", FALSE)
 figF19 <- function6("Groups: Average household income", FALSE)
+
+# For report: 
+figF12
+figF15
+figF18
+
+# For figure alternatives: 
+# figF12.5 <- (function6(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figF15.5 <- (function6(nTiles5, "Groups: No college share", FALSE))$data
+# figF18.5 <- (function6(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figF12.20 <- (function6(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figF15.20 <- (function6(nTiles20, "Groups: No college share", FALSE))$data
+# figF18.20 <- (function6(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figF12.100 <- (function6(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figF15.100 <- (function6(nTiles100, "Groups: No college share", FALSE))$data
+# figF18.100 <- (function6(nTiles100, "Groups: Share of population in poverty", FALSE))$data
 
 #### End #### 
 
@@ -3389,6 +3531,22 @@ figG17 <- function7("Groups: Households receiving SNAP share", FALSE)
 figG18 <- function7("Groups: Share of population in poverty", FALSE)
 figG19 <- function7("Groups: Average household income", FALSE)
 
+# For report: 
+figG12 + guides(color=FALSE)
+figG15 + guides(color=FALSE)
+figG18 + guides(color=FALSE)
+
+# For figure alternatives: 
+# figG12.5 <- (function7(nTiles5, "Groups: Black or Latino share", FALSE))$data
+# figG15.5 <- (function7(nTiles5, "Groups: No college share", FALSE))$data
+# figG18.5 <- (function7(nTiles5, "Groups: Share of population in poverty", FALSE))$data
+# figG12.20 <- (function7(nTiles20, "Groups: Black or Latino share", FALSE))$data
+# figG15.20 <- (function7(nTiles20, "Groups: No college share", FALSE))$data
+# figG18.20 <- (function7(nTiles20, "Groups: Share of population in poverty", FALSE))$data
+# figG12.100 <- (function7(nTiles100, "Groups: Black or Latino share", FALSE))$data
+# figG15.100 <- (function7(nTiles100, "Groups: No college share", FALSE))$data
+# figG18.100 <- (function7(nTiles100, "Groups: Share of population in poverty", FALSE))$data
+ 
 #### End #### 
 
 ####################################
@@ -3691,7 +3849,6 @@ analysis0 <- analysis0 %>% pivot_longer(cols=c(
     "Jul."
   ))
 )
-figI0 <- ggplot(data=analysis0, mapping=aes(x=`Date`, y=`Completion rate`, group=`Year`, color=`Year`)) + geom_point(size=2.5) + geom_line(aes(linetype=`Year`), size=1.5) + theme(legend.position="bottom") + scale_y_continuous(limits=c(0, 0.65), labels=percent_format(accuracy=1)) + scale_linetype_manual(values=c("dotted", "longdash", "twodash"))
 
 #### End #### 
 
@@ -3846,7 +4003,213 @@ figH <- figH + geom_hline(yintercept=jul2023.rate, linetype="dashed")
 figH <- figH + geom_hline(yintercept=jul2017.rate, linetype="dashed")
 figH <- figH + theme(legend.position="bottom") + scale_linetype_manual(values=c("longdash", "twodash", "solid", "solid", "solid")) + scale_color_manual(values=c("royalblue4", "deepskyblue1", "blue")) + scale_y_continuous(limits=c(0, 0.65), labels=percent_format(accuracy=1))
 
+# For report: 
+figH
+
 rm(analysis0, analysis1)
 
 #### End #### 
+
+####################################
+#### Chart alternatives         ####
+####################################
+
+#### Chart alternatives #### 
+
+# Figure 1 alternative: Quintiles, all in one figure
+# figA12.5 <- figA12.5 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figA15.5 <- figA15.5 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figA18.5 <- figA18.5 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figA.5 <- rbind(figA12.5, figA15.5, figA18.5)
+# figA.5 <- figA.5 %>% rename(`Quintile` = `InterestVar`) %>% mutate(`Quintile` = as.character(`Quintile`))
+# figA.5$`Quintile`[figA.5$`Quintile`=="1"] <- "1st quintile (Bottom 20%)"
+# figA.5$`Quintile`[figA.5$`Quintile`=="2"] <- "2nd quintile"
+# figA.5$`Quintile`[figA.5$`Quintile`=="3"] <- "3rd quintile"
+# figA.5$`Quintile`[figA.5$`Quintile`=="4"] <- "4th quintile"
+# figA.5$`Quintile`[figA.5$`Quintile`=="5"] <- "5th quintile (Top 20%)"
+# ggplot(data=figA.5, mapping=aes(x=`Community demographic`, y=`Decline in YoY completions`, fill=`Quintile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.3, 0)) + scale_fill_manual(values=c("dodgerblue", "dodgerblue1", "dodgerblue2", "dodgerblue3", "dodgerblue4"))
+
+# Figure 1 alternative: Deciles, all in one figure
+# figA12.10 <- figA12.10 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figA15.10 <- figA15.10 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figA18.10 <- figA18.10 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figA.10 <- rbind(figA12.10, figA15.10, figA18.10)
+# figA.10 <- figA.10 %>% rename(`Decile` = `InterestVar`) %>% mutate(`Decile` = as.character(`Decile`))
+# figA.10$`Decile`[figA.10$`Decile`=="1"] <- "1st decile (Bottom 10%)"
+# figA.10$`Decile`[figA.10$`Decile`=="2"] <- "2nd decile"
+# figA.10$`Decile`[figA.10$`Decile`=="3"] <- "3rd decile"
+# figA.10$`Decile`[figA.10$`Decile`=="4"] <- "4th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="5"] <- "5th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="6"] <- "6th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="7"] <- "7th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="8"] <- "8th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="9"] <- "9th decile"
+# figA.10$`Decile`[figA.10$`Decile`=="10"] <- "10th decile (Top 10%)"
+# figA.10$`Decile` <- factor(figA.10$`Decile`, levels=c(
+#   "1st decile (Bottom 10%)", 
+#   "2nd decile", 
+#   "3rd decile", 
+#   "4th decile", 
+#   "5th decile", 
+#   "6th decile", 
+#   "7th decile",
+#   "8th decile", 
+#   "9th decile", 
+#   "10th decile (Top 10%)"
+# ))
+# ggplot(data=figA.10, mapping=aes(x=`Community demographic`, y=`Decline in YoY completions`, fill=`Decile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-0.3, 0)) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(10))
+
+# Figure 1 alternative: Scatterplots, separate figures by demographic
+# analysisA <- analysis %>% mutate(
+#   `Decline in YoY completions` = (`Applications completed through April 30, 2024` - `Applications completed through April 30, 2023`) / `Applications completed through April 30, 2023`
+# ) %>% filter((`Decline in YoY completions` %in% c(Inf, -1))==FALSE)
+# ggplot(data=analysisA, mapping=aes(x=`Black or Latino share`, y=`Decline in YoY completions`, alpha=`Grade 12 students, 2022-23`, size=`Grade 12 students, 2022-23`)) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-1, 1)) + scale_x_continuous(labels=percent_format(accuracy=1)) 
+# ggplot(data=analysisA, mapping=aes(x=`No college share`, y=`Decline in YoY completions`, alpha=`Grade 12 students, 2022-23`, size=`Grade 12 students, 2022-23`)) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-1, 1)) + scale_x_continuous(labels=percent_format(accuracy=1)) 
+# ggplot(data=analysisA, mapping=aes(x=`Share of population in poverty`, y=`Decline in YoY completions`, alpha=`Grade 12 students, 2022-23`, size=`Grade 12 students, 2022-23`)) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(-1, 1)) + scale_x_continuous(labels=percent_format(accuracy=1)) 
+
+
+# Figure 2 alternative: Quintiles, all in one figure
+# figB12.5 <- figB12.5 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figB15.5 <- figB15.5 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figB18.5 <- figB18.5 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figB.5 <- rbind(figB12.5, figB15.5, figB18.5)
+# figB.5 <- figB.5 %>% rename(`Quintile` = `InterestVar`) %>% mutate(`Quintile` = as.character(`Quintile`))
+# figB.5$`Quintile`[figB.5$`Quintile`=="1"] <- "1st quintile (Bottom 20%)"
+# figB.5$`Quintile`[figB.5$`Quintile`=="2"] <- "2nd quintile"
+# figB.5$`Quintile`[figB.5$`Quintile`=="3"] <- "3rd quintile"
+# figB.5$`Quintile`[figB.5$`Quintile`=="4"] <- "4th quintile"
+# figB.5$`Quintile`[figB.5$`Quintile`=="5"] <- "5th quintile (Top 20%)"
+# ggplot(data=figB.5, mapping=aes(x=`Community demographic`, y=`FAFSA completion rate`, fill=`Quintile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.5)) + scale_fill_manual(values=c("dodgerblue", "dodgerblue1", "dodgerblue2", "dodgerblue3", "dodgerblue4"))
+
+# Figure 2 alternative: Deciles, all in one figure
+# figB12.10 <- figB12.10 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figB15.10 <- figB15.10 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figB18.10 <- figB18.10 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figB.10 <- rbind(figB12.10, figB15.10, figB18.10)
+# figB.10 <- figB.10 %>% rename(`Decile` = `InterestVar`) %>% mutate(`Decile` = as.character(`Decile`))
+# figB.10$`Decile`[figB.10$`Decile`=="1"] <- "1st decile (Bottom 10%)"
+# figB.10$`Decile`[figB.10$`Decile`=="2"] <- "2nd decile"
+# figB.10$`Decile`[figB.10$`Decile`=="3"] <- "3rd decile"
+# figB.10$`Decile`[figB.10$`Decile`=="4"] <- "4th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="5"] <- "5th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="6"] <- "6th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="7"] <- "7th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="8"] <- "8th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="9"] <- "9th decile"
+# figB.10$`Decile`[figB.10$`Decile`=="10"] <- "10th decile (Top 10%)"
+# figB.10$`Decile` <- factor(figB.10$`Decile`, levels=c(
+#   "1st decile (Bottom 10%)", 
+#   "2nd decile", 
+#   "3rd decile", 
+#   "4th decile", 
+#   "5th decile", 
+#   "6th decile", 
+#   "7th decile",
+#   "8th decile", 
+#   "9th decile", 
+#   "10th decile (Top 10%)"
+# ))
+# ggplot(data=figB.10, mapping=aes(x=`Community demographic`, y=`FAFSA completion rate`, fill=`Decile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.5)) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(10))
+
+# Figure 3 alternative: Quintiles, all in one figure
+# figD12.5 <- figD12.5 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figD15.5 <- figD15.5 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figD18.5 <- figD18.5 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figD.5 <- rbind(figD12.5, figD15.5, figD18.5)
+# figD.5 <- figD.5 %>% rename(`Quintile` = `InterestVar`) %>% mutate(`Quintile` = as.character(`Quintile`))
+# figD.5$`Quintile`[figD.5$`Quintile`=="1"] <- "1st quintile (Bottom 20%)"
+# figD.5$`Quintile`[figD.5$`Quintile`=="2"] <- "2nd quintile"
+# figD.5$`Quintile`[figD.5$`Quintile`=="3"] <- "3rd quintile"
+# figD.5$`Quintile`[figD.5$`Quintile`=="4"] <- "4th quintile"
+# figD.5$`Quintile`[figD.5$`Quintile`=="5"] <- "5th quintile (Top 20%)"
+# ggplot(data=figD.5, mapping=aes(x=`Community demographic`, y=`Share of submitted FAFSAs that are incomplete`, fill=`Quintile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.15)) + scale_fill_manual(values=c("dodgerblue", "dodgerblue1", "dodgerblue2", "dodgerblue3", "dodgerblue4"))
+
+# Figure 3 alternative: Deciles, all in one figure
+# figD12.10 <- figD12.10 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figD15.10 <- figD15.10 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figD18.10 <- figD18.10 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figD.10 <- rbind(figD12.10, figD15.10, figD18.10)
+# figD.10 <- figD.10 %>% rename(`Decile` = `InterestVar`) %>% mutate(`Decile` = as.character(`Decile`))
+# figD.10$`Decile`[figD.10$`Decile`=="1"] <- "1st decile (Bottom 10%)"
+# figD.10$`Decile`[figD.10$`Decile`=="2"] <- "2nd decile"
+# figD.10$`Decile`[figD.10$`Decile`=="3"] <- "3rd decile"
+# figD.10$`Decile`[figD.10$`Decile`=="4"] <- "4th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="5"] <- "5th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="6"] <- "6th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="7"] <- "7th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="8"] <- "8th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="9"] <- "9th decile"
+# figD.10$`Decile`[figD.10$`Decile`=="10"] <- "10th decile (Top 10%)"
+# figD.10$`Decile` <- factor(figD.10$`Decile`, levels=c(
+#   "1st decile (Bottom 10%)", 
+#   "2nd decile", 
+#   "3rd decile", 
+#   "4th decile", 
+#   "5th decile", 
+#   "6th decile", 
+#   "7th decile",
+#   "8th decile", 
+#   "9th decile", 
+#   "10th decile (Top 10%)"
+# ))
+# ggplot(data=figD.10, mapping=aes(x=`Community demographic`, y=`Share of submitted FAFSAs that are incomplete`, fill=`Decile`)) + geom_bar(stat="identity", position = position_dodge2(width = 0.1, preserve = "single")) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.15)) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(10))
+
+# Figure 4 alternative: Quintiles, linechart
+# figC12.5 <- figC12.5 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figC15.5 <- figC15.5 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figC18.5 <- figC18.5 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figC.5 <- rbind(figC12.5, figC15.5, figC18.5)
+# figC.5 <- figC.5 %>% rename(`Quintile` = `InterestVar`) %>% mutate(`Quintile` = as.character(`Quintile`))
+# figC.5$`Quintile`[figC.5$`Quintile`=="1"] <- "1st quintile (Bottom 20%)"
+# figC.5$`Quintile`[figC.5$`Quintile`=="2"] <- "2nd quintile"
+# figC.5$`Quintile`[figC.5$`Quintile`=="3"] <- "3rd quintile"
+# figC.5$`Quintile`[figC.5$`Quintile`=="4"] <- "4th quintile"
+# figC.5$`Quintile`[figC.5$`Quintile`=="5"] <- "5th quintile (Top 20%)"
+# figC.5 <- figC.5 %>% filter(`Quintile` %in% c("1st quintile (Bottom 20%)", "5th quintile (Top 20%)"))
+# ggplot(data=figC.5, mapping=aes(x=`Date`, y=`Submission rate`, group=interaction(`Community demographic`, `Quintile`), color=`Community demographic`, linetype=`Quintile`)) + geom_line(size=1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1)) + scale_color_manual(values=c("dodgerblue3", "firebrick3", "chartreuse3"))
+
+# Figure 4 alternative: Quintiles, barchart, stacked
+# figC.5upper <- figC.5 %>% filter(`Quintile`=="1st quintile (Bottom 20%)")
+# figC.5lower <- figC.5 %>% filter(`Quintile`=="5th quintile (Top 20%)")
+# ggplot() + geom_bar(
+#   data=figC.5upper, mapping=aes(x=`Community demographic`, y=`Submission rate`, fill=`Date`), stat="identity", width=0.75, position=position_dodge(width = 1, preserve = "single")
+# ) + geom_bar(
+#   data=figC.5lower, mapping=aes(x=`Community demographic`, y=`Submission rate`, color=`Date`), stat="identity", width=0.5, position=position_dodge(width = 1, preserve = "single"), fill="white", alpha=0.75
+# ) + scale_color_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(4)) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(4)) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.55))
+
+# Figure 4 alternative: Deciles, linechart
+# figC12.10 <- figC12.10 %>% mutate(`Community demographic` = rep("Share who are Black or Latino"))
+# figC15.10 <- figC15.10 %>% mutate(`Community demographic` = rep("Share who are non-college"))
+# figC18.10 <- figC18.10 %>% mutate(`Community demographic` = rep("Share who are in poverty"))
+# figC.10 <- rbind(figC12.10, figC15.10, figC18.10)
+# figC.10 <- figC.10 %>% rename(`Decile` = `InterestVar`) %>% mutate(`Decile` = as.character(`Decile`))
+# figC.10$`Decile`[figC.10$`Decile`=="1"] <- "1st decile (Bottom 10%)"
+# figC.10$`Decile`[figC.10$`Decile`=="2"] <- "2nd decile"
+# figC.10$`Decile`[figC.10$`Decile`=="3"] <- "3rd decile"
+# figC.10$`Decile`[figC.10$`Decile`=="4"] <- "4th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="5"] <- "5th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="6"] <- "6th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="7"] <- "7th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="8"] <- "8th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="9"] <- "9th decile"
+# figC.10$`Decile`[figC.10$`Decile`=="10"] <- "10th decile (Top 10%)"
+# figC.10 <- figC.10 %>% filter(`Decile` %in% c("1st decile (Bottom 10%)", "10th decile (Top 10%)"))
+# figC.10$`Decile` <- factor(figC.10$`Decile`, levels=c(
+#   "1st decile (Bottom 10%)", 
+#   "10th decile (Top 10%)"
+# ))
+# ggplot(data=figC.10, mapping=aes(x=`Date`, y=`Submission rate`, group=interaction(`Community demographic`, `Decile`), color=`Community demographic`, linetype=`Decile`)) + geom_line(size=1) + geom_point() + scale_y_continuous(labels=percent_format(accuracy=1)) + scale_color_manual(values=c("dodgerblue3", "firebrick3", "chartreuse3"))
+
+# Figure 4 alternative: Deciles, barchart, stacked
+# figC.10upper <- figC.10 %>% filter(`Decile`=="1st decile (Bottom 10%)")
+# figC.10lower <- figC.10 %>% filter(`Decile`=="10th decile (Top 10%)")
+# ggplot() + geom_bar(
+#   data=figC.10upper, mapping=aes(x=`Community demographic`, y=`Submission rate`, fill=`Date`), stat="identity", width=0.75, position=position_dodge(width = 1, preserve = "single")
+# ) + geom_bar(
+#   data=figC.10lower, mapping=aes(x=`Community demographic`, y=`Submission rate`, color=`Date`), stat="identity", width=0.5, position=position_dodge(width = 1, preserve = "single"), fill="white", alpha=0.75
+# ) + scale_color_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(4)) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(4)) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.55))
+
+#### End #### 
+
+
 
