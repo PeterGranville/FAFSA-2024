@@ -1,3 +1,12 @@
+---
+title: "FAFSA 2024 Charts"
+author: "Peter Granville"
+date: "2024-06-12"
+output: powerpoint_presentation
+---
+
+```{r setup, echo = FALSE, warning = FALSE, message = FALSE}
+
 
 #### Setup ####
 
@@ -4411,4 +4420,1055 @@ mandateStates <- aggregate(data=census, cbind(
 write.csv(mandateStates, "output 06-03-2024.csv", row.names=FALSE)
 
 #### End #### 
+
+
+```
+
+# Figure set A: Decline in year-over-year completions
+
+This corresponds to Figures 1 to 3 in the report. 
+
+***
+
+## Figure A1: 
+
+Decline in YoY completions by share of residents who are born in the U.S.
+
+```{r figA1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA1 + labs(x="Demographic quintile (5th=highest)")
+```
+
+### Figure A2:
+
+Decline in YoY completions by share of residents who are foreign-born (excl. Europe)
+
+```{r figA2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA2 + labs(x="Demographic quintile (5th=highest)")
+```
+
+#### Figure A3: 
+
+Decline in YoY completions by share of households with limited English proficiency
+
+```{r figA3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA3 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A4: 
+
+Decline in YoY completions by share of residents who are white
+
+```{r figA4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA4 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A5: 
+
+Decline in YoY completions by share of residents who are Black
+
+```{r figA5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA5 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A6: 
+
+Decline in YoY completions by share of residents who are Hispanic or Latino
+
+```{r figA6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA6 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A7: 
+
+Decline in YoY completions by share of residents who are Native American
+
+```{r figA7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA7 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A8: 
+
+Decline in YoY completions by share of residents who are Asian
+
+```{r figA8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA8 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A9: 
+
+Decline in YoY completions by share of residents who are Pacific Islander
+
+```{r figA9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA9 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A10: 
+
+Decline in YoY completions by share of residents who are another race
+
+```{r figA10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA10 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A11: 
+
+Decline in YoY completions by share of residents who are of two or more races
+
+```{r figA11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA11 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A12: 
+
+Decline in YoY completions by share of residents who are Black or Latino
+
+```{r figA12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA12 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A13: 
+
+Decline in YoY completions by share of residents who are Black, Latino, or Native American
+
+```{r figA13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA13 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A14: 
+
+Decline in YoY completions by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figA14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA14 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A15: 
+
+Decline in YoY completions by share of adults who did not attend college
+
+```{r figA15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA15 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A16: 
+
+Decline in YoY completions by share of adults with an associate's degree or higher
+
+```{r figA16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA16 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A17: 
+
+Decline in YoY completions by share of households receiving SNAP
+
+```{r figA17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA17 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A18: 
+
+Decline in YoY completions by share of population in poverty
+
+```{r figA18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA18 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A19: 
+
+Decline in YoY completions by average household income
+
+```{r figA19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA19 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A20: 
+
+Decline in YoY completions by FTE guidance counselors per student
+
+```{r figA20, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA20 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A21: 
+
+Decline in YoY completions by FTE secondary school counselors per senior
+
+```{r figA21, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA21 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure A22: 
+
+Decline in YoY completions by distance to nearest college
+
+```{r figA22, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figA22 + labs(x="Demographic quintile (5th=highest)")
+```
+
+# Figure set B: FAFSA completion rate
+
+This corresponds to Figures 4 to 6 in the report. 
+
+***
+
+## Figure B1: 
+
+FAFSA completion rate by share of residents who are born in the U.S.
+
+```{r figB1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB1 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B2: 
+
+FAFSA completion rate by share of residents who are foreign-born (excl. Europe)
+
+```{r figB2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB2 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B3: 
+
+FAFSA completion rate by share of households with limited English proficiency
+
+```{r figB3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB3 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B4: 
+
+FAFSA completion rate by share of residents who are white
+
+```{r figB4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB4 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B5: 
+
+FAFSA completion rate by share of residents who are Black
+
+```{r figB5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB5 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B6: 
+
+FAFSA completion rate by share of residents who are Hispanic or Latino
+
+```{r figB6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB6 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B7: 
+
+FAFSA completion rate by share of residents who are Native American
+
+```{r figB7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB7 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B8: 
+
+FAFSA completion rate by share of residents who are Asian
+
+```{r figB8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB8 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B9: 
+
+FAFSA completion rate by share of residents who are Pacific Islander
+
+```{r figB9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB9 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B10: 
+
+FAFSA completion rate by share of residents who are another race
+
+```{r figB10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB10 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B11: 
+
+FAFSA completion rate by share of residents who are of two or more races
+
+```{r figB11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB11 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B12: 
+
+FAFSA completion rate by share of residents who are Black or Latino
+
+```{r figB12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB12 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B13: 
+
+FAFSA completion rate by share of residents who are Black, Latino, or Native American
+
+```{r figB13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB13 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B14: 
+
+FAFSA completion rate by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figB14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB14 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B15: 
+
+FAFSA completion rate by share of adults who did not attend college
+
+```{r figB15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB15 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B16: 
+
+FAFSA completion rate by share of adults with an associate's degree or higher
+
+```{r figB16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB16 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B17: 
+
+FAFSA completion rate by share of households receiving SNAP
+
+```{r figB17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB17 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B18: 
+
+FAFSA completion rate by share of population in poverty
+
+```{r figB18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB18 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B19: 
+
+FAFSA completion rate by average household income
+
+```{r figB19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB19 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B20: 
+
+FAFSA completion rate by FTE guidance counselors per student
+
+```{r figB20, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB20 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B21: 
+
+FAFSA completion rate by FTE secondary school counselors per senior
+
+```{r figB21, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB21 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure B22: 
+
+FAFSA completion rate by distance to nearest college
+
+```{r figB22, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figB22 + labs(x="Demographic quintile (5th=highest)")
+```
+
+# Figure set C: FAFSA submission rate by month 
+
+This corresponds to Figures 10 to 12 in the report. 
+
+***
+
+## Figure C1: 
+
+Monthly FAFSA submission rate by share of residents who are born in the U.S.
+
+```{r figC1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC1 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C2: 
+
+Monthly FAFSA submission rate by share of residents who are foreign-born (excl. Europe)
+
+```{r figC2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC2 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C3: 
+
+Monthly FAFSA submission rate by share of households with limited English proficiency
+
+```{r figC3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC3 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C4: 
+
+Monthly FAFSA submission rate by share of residents who are white
+
+```{r figC4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC4 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C5: 
+
+Monthly FAFSA submission rate by share of residents who are Black
+
+```{r figC5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC5 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C6: 
+
+Monthly FAFSA submission rate by share of residents who are Hispanic or Latino
+
+```{r figC6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC6 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C7: 
+
+Monthly FAFSA submission rate by share of residents who are Native American
+
+```{r figC7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC7 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C8: 
+
+Monthly FAFSA submission rate by share of residents who are Asian
+
+```{r figC8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC8 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C9: 
+
+Monthly FAFSA submission rate by share of residents who are Pacific Islander
+
+```{r figC9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC9 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C10: 
+
+Monthly FAFSA submission rate by share of residents who are another race
+
+```{r figC10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC10 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C11: 
+
+Monthly FAFSA submission rate by share of residents who are of two or more races
+
+```{r figC11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC11 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C12: 
+
+Monthly FAFSA submission rate by share of residents who are Black or Latino
+
+```{r figC12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC12 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C13: 
+
+Monthly FAFSA submission rate by share of residents who are Black, Latino, or Native American
+
+```{r figC13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC13 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C14: 
+
+Monthly FAFSA submission rate by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figC14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC14 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C15: 
+
+Monthly FAFSA submission rate by share of adults who did not attend college
+
+```{r figC15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC15 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C16: 
+
+Monthly FAFSA submission rate by share of adults with an associate's degree or higher
+
+```{r figC16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC16 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C17: 
+
+Monthly FAFSA submission rate by share of households receiving SNAP
+
+```{r figC17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC17 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C18: 
+
+Monthly FAFSA submission rate by share of population in poverty
+
+```{r figC18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC18 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C19: 
+
+Monthly FAFSA submission rate by average household income
+
+```{r figC19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC19 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C20: 
+
+Monthly FAFSA submission rate by FTE guidance counselors per student
+
+```{r figC20, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC20 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C21: 
+
+Monthly FAFSA submission rate by FTE secondary school counselors per senior
+
+```{r figC21, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC21 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure C22: 
+
+Monthly FAFSA submission rate by distance to nearest college
+
+```{r figC22, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figC22 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+# Figure set D: Share of submitted FAFSAs that are incomplete
+
+This corresponds to Figures 7 to 9 in the report. 
+
+***
+
+## Figure D1: 
+
+Share of submissions that are incomplete by share of residents who are born in the U.S.
+
+```{r figD1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD1 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D2: 
+
+Share of submissions that are incomplete by share of residents who are foreign-born (excl. Europe)
+
+```{r figD2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD2 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D3: 
+
+Share of submissions that are incomplete by share of households with limited English proficiency
+
+```{r figD3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD3 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D4: 
+
+Share of submissions that are incomplete by share of residents who are white
+
+```{r figD4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD4 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D5: 
+
+Share of submissions that are incomplete by share of residents who are Black
+
+```{r figD5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD5 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D6: 
+
+Share of submissions that are incomplete by share of residents who are Hispanic or Latino
+
+```{r figD6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD6 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D7: 
+
+Share of submissions that are incomplete by share of residents who are Native American
+
+```{r figD7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD7 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D8: 
+
+Share of submissions that are incomplete by share of residents who are Asian
+
+```{r figD8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD8 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D9: 
+
+Share of submissions that are incomplete by share of residents who are Pacific Islander
+
+```{r figD9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD9 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D10: 
+
+Share of submissions that are incomplete by share of residents who are another race
+
+```{r figD10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD10 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D11: 
+
+Share of submissions that are incomplete by share of residents who are of two or more races
+
+```{r figD11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD11 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D12: 
+
+Share of submissions that are incomplete by share of residents who are Black or Latino
+
+```{r figD12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD12 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D13: 
+
+Share of submissions that are incomplete by share of residents who are Black, Latino, or Native American
+
+```{r figD13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD13 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D14: 
+
+Share of submissions that are incomplete by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figD14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD14 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D15: 
+
+Share of submissions that are incomplete by share of adults who did not attend college
+
+```{r figD15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD15 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D16: 
+
+Share of submissions that are incomplete by share of adults with an associate's degree or higher
+
+```{r figD16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD16 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D17: 
+
+Share of submissions that are incomplete by share of households receiving SNAP
+
+```{r figD17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD17 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D18: 
+
+Share of submissions that are incomplete by share of population in poverty
+
+```{r figD18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD18 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D19: 
+
+Share of submissions that are incomplete by average household income
+
+```{r figD19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD19 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D20: 
+
+Share of submissions that are incomplete by FTE guidance counselors per student
+
+```{r figD20, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD20 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D21: 
+
+Share of submissions that are incomplete by FTE secondary school counselors per senior
+
+```{r figD21, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD21 + labs(x="Demographic quintile (5th=highest)")
+```
+
+## Figure D22: 
+
+Share of submissions that are incomplete by distance to nearest college
+
+```{r figD22, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+figD22 + labs(x="Demographic quintile (5th=highest)")
+```
+
+# Figure set E: Monthly submission rates (2023 vs. 2024)
+
+This corresponds to Figures 18 to 20 in the report. 
+
+***
+
+## Figure E1: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are born in the U.S.
+
+```{r figE1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE1 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E2: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are foreign-born (excl. Europe)
+
+```{r figE2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE2 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E3: 
+
+Monthly submission rates (2023 vs. 2024) by share of households with limited English proficiency
+
+```{r figE3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE3 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E4: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are white
+
+```{r figE4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE4 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E5: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Black
+
+```{r figE5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE5 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E6: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Hispanic or Latino
+
+```{r figE6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE6 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E7: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Native American
+
+```{r figE7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE7 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E8: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Asian
+
+```{r figE8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE8 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E9: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Pacific Islander
+
+```{r figE9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE9 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E10: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are another race
+
+```{r figE10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE10 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E11: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are of two or more races
+
+```{r figE11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE11 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E12: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Black or Latino
+
+```{r figE12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE12 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E13: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Black, Latino, or Native American
+
+```{r figE13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE13 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E14: 
+
+Monthly submission rates (2023 vs. 2024) by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figE14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE14 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E15: 
+
+Monthly submission rates (2023 vs. 2024) by share of adults who did not attend college
+
+```{r figE15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE15 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E16: 
+
+Monthly submission rates (2023 vs. 2024) by share of adults with an associate's degree or higher
+
+```{r figE16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE16 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E17: 
+
+Monthly submission rates (2023 vs. 2024) by share of households receiving SNAP
+
+```{r figE17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE17 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E18: 
+
+Monthly submission rates (2023 vs. 2024) by share of population in poverty
+
+```{r figE18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE18 + labs(color="Demographic quintile (5th=highest)")
+```
+
+## Figure E19: 
+
+Monthly submission rates (2023 vs. 2024) by average household income
+
+```{r figE19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figE19 + labs(color="Demographic quintile (5th=highest)")
+```
+
+# Figure set F: Monthly FAFSA submission rates (Mandatory FAFSA states vs. others) 
+
+This corresponds to Figures 14 to 16 in the report. 
+
+***
+
+## Figure F1: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are born in the U.S.
+
+```{r figF1, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF1 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F2: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are foreign-born (excl. Europe)
+
+```{r figF2, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF2 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F3: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of households with limited English proficiency
+
+```{r figF3, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF3 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F4: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are white
+
+```{r figF4, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF4 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F5: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Black
+
+```{r figF5, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF5 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F6: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Hispanic or Latino
+
+```{r figF6, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF6 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F7: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Native American
+
+```{r figF7, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF7 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F8: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Asian
+
+```{r figF8, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF8 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F9: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Pacific Islander
+
+```{r figF9, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF9 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F10: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are another race
+
+```{r figF10, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF10 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F11: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are of two or more races
+
+```{r figF11, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF11 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F12: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Black or Latino
+
+```{r figF12, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF12 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F13: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Black, Latino, or Native American
+
+```{r figF13, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF13 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F14: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of residents who are Black, Latino, Native American, or Pacific Islander
+
+```{r figF14, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF14 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F15: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of adults who did not attend college
+
+```{r figF15, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF15 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F16: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of adults with an associate's degree or higher
+
+```{r figF16, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF16 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F17: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of households receiving SNAP
+
+```{r figF17, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF17 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F18: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by share of population in poverty
+
+```{r figF18, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF18 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+## Figure F19: 
+
+Monthly FAFSA submission rates (Mandatory FAFSA states vs. others)  by average household income
+
+```{r figF19, echo = FALSE, warning = FALSE, message = FALSE, fig.width=9.5,fig.height=6}
+figF19 + labs(fill="Demographic quintile (5th=highest)")
+```
+
+```{r reset, echo = FALSE, warning = FALSE, message = FALSE, fig.width=6,fig.height=4}
+setwd("/Users/peter_granville/FAFSA-2024")
+```
 
