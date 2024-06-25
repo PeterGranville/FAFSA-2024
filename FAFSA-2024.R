@@ -1472,180 +1472,180 @@ write.csv(zip2B, "Improvements by ZIP2.csv", row.names=FALSE)
 #### School counselors          ####
 ####################################
 
-#### Linking in data on school counselors by LEA ####
-
-setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
-directory <- read.csv("ccd_sch_029_2223.csv") %>% select(`NCESSCH`, `LEAID`, `LEA_NAME`) %>% rename(
-  `NCESSCH-ELSI` = `NCESSCH`
-) %>% mutate(
-  `NCESSCH-ELSI` = as.character(`NCESSCH-ELSI`)
-)
-districts <- left_join(x=goodMerge, y=directory, by="NCESSCH-ELSI")
-
-districts <- aggregate(data=districts, cbind(
-  `Grade 12 students, 2022-23`,
-  `Applications submitted through January 31, 2024`,
-  `Applications submitted through January 31, 2023`,
-  `Applications submitted through February 29, 2024`,
-  `Applications submitted through February 29, 2023`,
-  `Applications submitted through March 29, 2024`,
-  `Applications completed through March 29, 2024`,
-  `Applications submitted through March 29, 2023`,
-  `Applications completed through March 29, 2023`,
-  `Applications submitted through April 30, 2024`,
-  `Applications completed through April 30, 2024`,
-  `Applications submitted through April 30, 2023`,
-  `Applications completed through April 30, 2023`,
-  `Applications submitted through May 24, 2024`,
-  `Applications completed through May 24, 2024`,
-  `Applications submitted through May 24, 2023`,
-  `Applications completed through May 24, 2023`
-) ~ `LEAID`, FUN=sum)
-
-enrollment <- fread("ccd_lea_052_2223.csv", header=TRUE, select=c(
-  "LEAID",
-  "STUDENT_COUNT",
-  "TOTAL_INDICATOR"
-)) %>% filter(
-  `TOTAL_INDICATOR` == "Derived - Education Unit Total minus Adult Education Count"
-) %>% select(-(`TOTAL_INDICATOR`)) %>% rename(
-  `Total enrollment, 2022-23` = `STUDENT_COUNT`
-)
-districts <- left_join(x=districts, y=enrollment, by="LEAID")
-
-counselors <- read.csv("ccd_lea_059_2223.csv") %>% select(
-  `LEAID`,
-  `STAFF`,
-  `STAFF_COUNT`
-) %>% filter(`STAFF` %in% c("Secondary School Counselors", "Guidance Counselors")) %>% pivot_wider(
-  id_cols=c(`LEAID`),
-  names_from=`STAFF`,
-  values_from=`STAFF_COUNT`
-)
-districts <- left_join(x=districts, y=counselors, by="LEAID")
-
-districts1 <- districts %>% filter(is.na(`Guidance Counselors`)==FALSE) %>% select(-(`Secondary School Counselors`)) %>% mutate(
-  `FTE guidance counselors per student` = `Guidance Counselors` / `Total enrollment, 2022-23`
-) %>% mutate(
-  `Groups: FTE guidance counselors per student` = ntile(`FTE guidance counselors per student`, 5)
-)
-districts2 <- districts %>% filter(is.na(`Secondary School Counselors`)==FALSE) %>% select(-(`Guidance Counselors`)) %>% mutate(
-  `FTE secondary school counselors per senior` = `Secondary School Counselors` / `Grade 12 students, 2022-23`
-) %>% mutate(
-  `Groups: FTE secondary school counselors per senior` = ntile(`FTE secondary school counselors per senior`, 5)
-)
-
-#### End ####
-
-#### Run charts ####
-
-figA20 <- function1(districts1, "Groups: FTE guidance counselors per student")
-figB20 <- function2(districts1, "Groups: FTE guidance counselors per student")
-figC20 <- function3(districts1, "Groups: FTE guidance counselors per student")
-figD20 <- function4(districts1, "Groups: FTE guidance counselors per student")
-
-figA21 <- function1(districts2, "Groups: FTE secondary school counselors per senior")
-figB21 <- function2(districts2, "Groups: FTE secondary school counselors per senior")
-figC21 <- function3(districts2, "Groups: FTE secondary school counselors per senior")
-figD21 <- function4(districts2, "Groups: FTE secondary school counselors per senior")
-
-#### End ####
+# #### Linking in data on school counselors by LEA ####
+# 
+# setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+# directory <- read.csv("ccd_sch_029_2223.csv") %>% select(`NCESSCH`, `LEAID`, `LEA_NAME`) %>% rename(
+#   `NCESSCH-ELSI` = `NCESSCH`
+# ) %>% mutate(
+#   `NCESSCH-ELSI` = as.character(`NCESSCH-ELSI`)
+# )
+# districts <- left_join(x=goodMerge, y=directory, by="NCESSCH-ELSI")
+# 
+# districts <- aggregate(data=districts, cbind(
+#   `Grade 12 students, 2022-23`,
+#   `Applications submitted through January 31, 2024`,
+#   `Applications submitted through January 31, 2023`,
+#   `Applications submitted through February 29, 2024`,
+#   `Applications submitted through February 29, 2023`,
+#   `Applications submitted through March 29, 2024`,
+#   `Applications completed through March 29, 2024`,
+#   `Applications submitted through March 29, 2023`,
+#   `Applications completed through March 29, 2023`,
+#   `Applications submitted through April 30, 2024`,
+#   `Applications completed through April 30, 2024`,
+#   `Applications submitted through April 30, 2023`,
+#   `Applications completed through April 30, 2023`,
+#   `Applications submitted through May 24, 2024`,
+#   `Applications completed through May 24, 2024`,
+#   `Applications submitted through May 24, 2023`,
+#   `Applications completed through May 24, 2023`
+# ) ~ `LEAID`, FUN=sum)
+# 
+# enrollment <- fread("ccd_lea_052_2223.csv", header=TRUE, select=c(
+#   "LEAID",
+#   "STUDENT_COUNT",
+#   "TOTAL_INDICATOR"
+# )) %>% filter(
+#   `TOTAL_INDICATOR` == "Derived - Education Unit Total minus Adult Education Count"
+# ) %>% select(-(`TOTAL_INDICATOR`)) %>% rename(
+#   `Total enrollment, 2022-23` = `STUDENT_COUNT`
+# )
+# districts <- left_join(x=districts, y=enrollment, by="LEAID")
+# 
+# counselors <- read.csv("ccd_lea_059_2223.csv") %>% select(
+#   `LEAID`,
+#   `STAFF`,
+#   `STAFF_COUNT`
+# ) %>% filter(`STAFF` %in% c("Secondary School Counselors", "Guidance Counselors")) %>% pivot_wider(
+#   id_cols=c(`LEAID`),
+#   names_from=`STAFF`,
+#   values_from=`STAFF_COUNT`
+# )
+# districts <- left_join(x=districts, y=counselors, by="LEAID")
+# 
+# districts1 <- districts %>% filter(is.na(`Guidance Counselors`)==FALSE) %>% select(-(`Secondary School Counselors`)) %>% mutate(
+#   `FTE guidance counselors per student` = `Guidance Counselors` / `Total enrollment, 2022-23`
+# ) %>% mutate(
+#   `Groups: FTE guidance counselors per student` = ntile(`FTE guidance counselors per student`, 5)
+# )
+# districts2 <- districts %>% filter(is.na(`Secondary School Counselors`)==FALSE) %>% select(-(`Guidance Counselors`)) %>% mutate(
+#   `FTE secondary school counselors per senior` = `Secondary School Counselors` / `Grade 12 students, 2022-23`
+# ) %>% mutate(
+#   `Groups: FTE secondary school counselors per senior` = ntile(`FTE secondary school counselors per senior`, 5)
+# )
+# 
+# #### End ####
+# 
+# #### Run charts ####
+# 
+# figA20 <- function1(districts1, "Groups: FTE guidance counselors per student")
+# figB20 <- function2(districts1, "Groups: FTE guidance counselors per student")
+# figC20 <- function3(districts1, "Groups: FTE guidance counselors per student")
+# figD20 <- function4(districts1, "Groups: FTE guidance counselors per student")
+# 
+# figA21 <- function1(districts2, "Groups: FTE secondary school counselors per senior")
+# figB21 <- function2(districts2, "Groups: FTE secondary school counselors per senior")
+# figC21 <- function3(districts2, "Groups: FTE secondary school counselors per senior")
+# figD21 <- function4(districts2, "Groups: FTE secondary school counselors per senior")
+# 
+# #### End ####
 
 ####################################
 #### College proximity          ####
 ####################################
 
-#### Linking in data on college proximity ####
-
-setwd("/Users/peter_granville/FAFSA-2024/IPEDS data")
-hd <- fread("hd2022.csv", header=TRUE, select=c(
-  "UNITID",
-  "ZIP"
-)) %>% mutate(`ZIP` = substr(`ZIP`, 1, 5))
-effy <- fread("effy2022_dist.csv", header=TRUE, select=c(
- "UNITID",
- "EFFYDLEV",
- "EFYDETOT", # All students enrolled
- "EFYDEEXC", # Students enrolled exclusively in distance education courses
- "EFYDESOM", # Students enrolled in some but not all distance education courses
- "EFYDENON"  # Students not enrolled in any distance education courses
-)) %>% filter(`EFFYDLEV`==1) %>% select(-(`EFFYDLEV`)) %>% mutate(
-  `Share of students who are enrolled in-person` = (`EFYDENON` + `EFYDESOM`) / `EFYDETOT`
-) %>% filter(
-  `Share of students who are enrolled in-person` > 0.20
-)
-hd <- hd %>% filter(`UNITID` %in% effy$`UNITID`)
-rm(effy)
-
-zipDistances <- data.frame(`ZCTA5` = unique(goodMerge$`ZCTA5`))
-zipDistances <- zipDistances %>% mutate(
-  `Has college` = ifelse(substr(`ZCTA5`, 7, 11) %in% hd$`ZIP`, "Yes", "No")
-)
-zipYes <- zipDistances %>% filter(`Has college`=="Yes") %>% mutate(`Distance to nearest college` = rep(0)) %>% select(-(`Has college`))
-zipNo <- zipDistances %>% filter(`Has college`=="No") %>% select(-(`Has college`))
-rm(zipDistances)
-
-zipCalcs <- data.frame(`ZCTA5` = character(), `Distance to nearest college` = numeric(), check.names=FALSE)
-for(i in (1:nrow(zipNo))){
-
-  tempZips <- data.frame(`ZIP of college` = unique(hd$`ZIP`), check.names=FALSE)
-  tempZips <- tempZips %>% mutate(
-    `Distance to ZCTA` = zip_distance(`ZIP of college`, substr(zipNo$`ZCTA5`[i], 7, 11))$distance
-  ) %>% filter(is.na(`Distance to ZCTA`)==FALSE) %>% filter(is.infinite(`Distance to ZCTA`)==FALSE)
-  if(nrow(tempZips) > 0){
-    zipCalcs <- zipCalcs %>% add_row(
-      `ZCTA5` = zipNo$`ZCTA5`[i],
-      `Distance to nearest college` = min(tempZips$`Distance to ZCTA`, na.rm=TRUE)
-    )
-  }else{
-    zipCalcs <- zipCalcs %>% add_row(
-      `ZCTA5` = zipNo$`ZCTA5`[i],
-      `Distance to nearest college` = NA
-    )
-  }
-
-}
-rm(zipNo)
-
-zipDistances <- rbind(zipYes, zipCalcs)
-
-rankOutputs <- analysis %>% select(
-  `ZCTA5`,
-  `Grade 12 students, 2022-23`,
-  `Applications submitted through January 31, 2024`,
-  `Applications submitted through January 31, 2023`,
-  `Applications submitted through February 29, 2024`,
-  `Applications submitted through February 29, 2023`,
-  `Applications submitted through March 29, 2024`,
-  `Applications completed through March 29, 2024`,
-  `Applications submitted through March 29, 2023`,
-  `Applications completed through March 29, 2023`,
-  `Applications submitted through April 30, 2024`,
-  `Applications completed through April 30, 2024`,
-  `Applications submitted through April 30, 2023`,
-  `Applications completed through April 30, 2023`,
-  `Applications submitted through May 24, 2024`,
-  `Applications completed through May 24, 2024`,
-  `Applications submitted through May 24, 2023`,
-  `Applications completed through May 24, 2023`
-)
-
-zipDistances <- zipDistances %>% mutate(
-  `Quintiles: Distance to nearest college` = ntile(`Distance to nearest college`, 5)
-)
-
-zipDistances <- full_join(x=zipDistances, y=rankOutputs, by="ZCTA5")
-
-#### End ####
-
-#### Run charts ####
-
-figA22 <- function1(zipDistances, "Quintiles: Distance to nearest college")
-figB22 <- function2(zipDistances, "Quintiles: Distance to nearest college")
-figC22 <- function3(zipDistances, "Quintiles: Distance to nearest college")
-figD22 <- function4(zipDistances, "Quintiles: Distance to nearest college")
-
-#### End ####
+# #### Linking in data on college proximity ####
+# 
+# setwd("/Users/peter_granville/FAFSA-2024/IPEDS data")
+# hd <- fread("hd2022.csv", header=TRUE, select=c(
+#   "UNITID",
+#   "ZIP"
+# )) %>% mutate(`ZIP` = substr(`ZIP`, 1, 5))
+# effy <- fread("effy2022_dist.csv", header=TRUE, select=c(
+#  "UNITID",
+#  "EFFYDLEV",
+#  "EFYDETOT", # All students enrolled
+#  "EFYDEEXC", # Students enrolled exclusively in distance education courses
+#  "EFYDESOM", # Students enrolled in some but not all distance education courses
+#  "EFYDENON"  # Students not enrolled in any distance education courses
+# )) %>% filter(`EFFYDLEV`==1) %>% select(-(`EFFYDLEV`)) %>% mutate(
+#   `Share of students who are enrolled in-person` = (`EFYDENON` + `EFYDESOM`) / `EFYDETOT`
+# ) %>% filter(
+#   `Share of students who are enrolled in-person` > 0.20
+# )
+# hd <- hd %>% filter(`UNITID` %in% effy$`UNITID`)
+# rm(effy)
+# 
+# zipDistances <- data.frame(`ZCTA5` = unique(goodMerge$`ZCTA5`))
+# zipDistances <- zipDistances %>% mutate(
+#   `Has college` = ifelse(substr(`ZCTA5`, 7, 11) %in% hd$`ZIP`, "Yes", "No")
+# )
+# zipYes <- zipDistances %>% filter(`Has college`=="Yes") %>% mutate(`Distance to nearest college` = rep(0)) %>% select(-(`Has college`))
+# zipNo <- zipDistances %>% filter(`Has college`=="No") %>% select(-(`Has college`))
+# rm(zipDistances)
+# 
+# zipCalcs <- data.frame(`ZCTA5` = character(), `Distance to nearest college` = numeric(), check.names=FALSE)
+# for(i in (1:nrow(zipNo))){
+# 
+#   tempZips <- data.frame(`ZIP of college` = unique(hd$`ZIP`), check.names=FALSE)
+#   tempZips <- tempZips %>% mutate(
+#     `Distance to ZCTA` = zip_distance(`ZIP of college`, substr(zipNo$`ZCTA5`[i], 7, 11))$distance
+#   ) %>% filter(is.na(`Distance to ZCTA`)==FALSE) %>% filter(is.infinite(`Distance to ZCTA`)==FALSE)
+#   if(nrow(tempZips) > 0){
+#     zipCalcs <- zipCalcs %>% add_row(
+#       `ZCTA5` = zipNo$`ZCTA5`[i],
+#       `Distance to nearest college` = min(tempZips$`Distance to ZCTA`, na.rm=TRUE)
+#     )
+#   }else{
+#     zipCalcs <- zipCalcs %>% add_row(
+#       `ZCTA5` = zipNo$`ZCTA5`[i],
+#       `Distance to nearest college` = NA
+#     )
+#   }
+# 
+# }
+# rm(zipNo)
+# 
+# zipDistances <- rbind(zipYes, zipCalcs)
+# 
+# rankOutputs <- analysis %>% select(
+#   `ZCTA5`,
+#   `Grade 12 students, 2022-23`,
+#   `Applications submitted through January 31, 2024`,
+#   `Applications submitted through January 31, 2023`,
+#   `Applications submitted through February 29, 2024`,
+#   `Applications submitted through February 29, 2023`,
+#   `Applications submitted through March 29, 2024`,
+#   `Applications completed through March 29, 2024`,
+#   `Applications submitted through March 29, 2023`,
+#   `Applications completed through March 29, 2023`,
+#   `Applications submitted through April 30, 2024`,
+#   `Applications completed through April 30, 2024`,
+#   `Applications submitted through April 30, 2023`,
+#   `Applications completed through April 30, 2023`,
+#   `Applications submitted through May 24, 2024`,
+#   `Applications completed through May 24, 2024`,
+#   `Applications submitted through May 24, 2023`,
+#   `Applications completed through May 24, 2023`
+# )
+# 
+# zipDistances <- zipDistances %>% mutate(
+#   `Quintiles: Distance to nearest college` = ntile(`Distance to nearest college`, 5)
+# )
+# 
+# zipDistances <- full_join(x=zipDistances, y=rankOutputs, by="ZCTA5")
+# 
+# #### End ####
+# 
+# #### Run charts ####
+# 
+# figA22 <- function1(zipDistances, "Quintiles: Distance to nearest college")
+# figB22 <- function2(zipDistances, "Quintiles: Distance to nearest college")
+# figC22 <- function3(zipDistances, "Quintiles: Distance to nearest college")
+# figD22 <- function4(zipDistances, "Quintiles: Distance to nearest college")
+# 
+# #### End ####
 
 ####################################
 #### Comparison: 2023           ####   
