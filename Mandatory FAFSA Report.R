@@ -973,12 +973,13 @@ badZIPs <- c(
 addState <- function(analysis){
   
   analysis <- analysis %>% mutate(`State` = rep(NA))
+  
   for(i in (1:nrow(analysis))){
     if((analysis$`ZCTA5`[i] %in% badZIPs)==FALSE){
       analysis$`State`[i] <- reverse_zipcode(substr(analysis$`ZCTA5`[i], 7, 11))$state
     }
   }
-
+  
   return(analysis)
 }
 
@@ -1896,6 +1897,71 @@ decilesY3c <- onetenPlot(deciles.national, "Groups: Share of population in pover
 
 #### End #### 
 
+#### For October commentary ####
+
+# Run the whole gamut of variables, including Hispanic 
+
+quintilePlot(quintiles.national, "Groups: Native-born share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Foreign-born share: AAOA" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: White share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Black share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Native American share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Asian share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Pacific Islander share" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Other race share" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Two or more races share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Hispanic or Latino share" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Black, Latino, or Native American share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Black, Latino, Native American, or Pacific Islander share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Less than 9th grade share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: High school, no diploma share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: High school diploma share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Some college, no degree share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Associate's degree share" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Bachelor's degree share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Graduate degree share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: No college share" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Associate's or higher share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Households receiving SNAP share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Limited English share", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Share of population in poverty" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Share of children in poverty" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Average household income" , FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Average household income (with wages)", FALSE, FALSE, c("None"))
+
+decilePlot(deciles.national, "Groups: Native-born share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Foreign-born share: AAOA" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: White share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Black share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Native American share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Asian share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Pacific Islander share" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Other race share" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Two or more races share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Hispanic or Latino share" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Black, Latino, or Native American share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Black, Latino, Native American, or Pacific Islander share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Less than 9th grade share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: High school, no diploma share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: High school diploma share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Some college, no degree share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Associate's degree share" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Bachelor's degree share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Graduate degree share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: No college share" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Associate's or higher share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Households receiving SNAP share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Limited English share", FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Share of population in poverty" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Share of children in poverty" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Average household income" , FALSE, FALSE, c("None"))
+decilePlot(deciles.national, "Groups: Average household income (with wages)", FALSE, FALSE, c("None"))
+
+
+#### End #### 
+
 ########################################
 #### Which state has the best FAFSA ####
 #### completion rate in communities ####
@@ -2003,11 +2069,630 @@ ggplotly(figQ4)
 
 #### End #### 
 
+########################################
+#### For commentary with Bill       ####
+########################################
+
+#### Derive county from ZIP ####
+
+badZIPs <- c(
+  "ZCTA5 03209",
+  "ZCTA5 19326",
+  "ZCTA5 22464",
+  "ZCTA5 23135",
+  "ZCTA5 26839",
+  "ZCTA5 27899",
+  "ZCTA5 36363",
+  "ZCTA5 43624",
+  "ZCTA5 70488",
+  "ZCTA5 71875",
+  "ZCTA5 95057",
+  "ZCTA5 96361", 
+  "ZCTA5 97003"
+)
+
+addCounty <- function(analysis0){
+  
+  analysis0 <- analysis0 %>% mutate(`County` = rep(NA))
+  for(i in (1:nrow(analysis0))){
+    if((analysis0$`ZCTA5`[i] %in% badZIPs)==FALSE){
+      analysis0$`County`[i] <- reverse_zipcode(substr(analysis0$`ZCTA5`[i], 7, 11))$county
+    }
+  }
+  
+  return(analysis0)
+}
+
+analysis17 <- addCounty(analysis17)
+analysis18 <- addCounty(analysis18)
+analysis19 <- addCounty(analysis19)
+analysis20 <- addCounty(analysis20)
+analysis21 <- addCounty(analysis21)
+analysis22 <- addCounty(analysis22)
+analysis23 <- addCounty(analysis23)
+analysis24 <- addCounty(analysis24)
+
+rm(badZIPs)
+
+#### End #### 
+
+#### Analyze FAFSAs by county ####
+
+householdInc <- function(analysis0, incomeVal, yearVal){
+  
+  labelUnder <- paste("Under ", dollar(incomeVal), sep="")
+  labelOver <- paste("At least ", dollar(incomeVal), sep="")
+  
+  analysis <- analysis0 
+  
+  analysis <- analysis %>% filter(
+    is.na(`County`)==FALSE, 
+    is.na(`State`)==FALSE
+  ) %>% mutate(
+    `County-State` = paste(`County`, `State`, sep=", ")
+  )
+  
+  agg1A <- aggregate(data=analysis, cbind(
+    `Grade 12 students`, `Submissions`, `Completions`
+  ) ~ `County-State`, FUN=sum)
+  
+  agg1B <- analysis %>% group_by(`County-State`) %>% summarize(
+    `Average household income` = weighted.mean(x=`Average household income`, w=`Total households (C5)`))
+  
+  agg1 <- left_join(x=agg1A, y=agg1B, by="County-State")
+  rm(agg1A, agg1B)
+  
+  agg1 <- agg1 %>% filter(
+    is.na(`Average household income`)==FALSE, 
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  )
+  
+  agg1 <- agg1 %>% mutate(
+    `Average household income under threshold` = ifelse(
+      `Average household income` < incomeVal, labelUnder, labelOver
+    )
+  )
+  
+  agg1 <- agg1 %>% mutate(
+    `FAFSA Completion Rate` = `Completions` / `Grade 12 students`
+  )
+  
+  medianVal <- median(agg1$`FAFSA Completion Rate`, na.rm=TRUE)
+  # medianVal <- sum(agg1$`Completions`, na.rm=TRUE) / sum(agg1$`Grade 12 students`, na.rm=TRUE)
+  
+  agg1 <- agg1 %>% mutate(
+    `Over median completion rate` = ifelse(`FAFSA Completion Rate` >= medianVal, "Over median", "Under median")
+  )
+  
+  agg1 <- agg1 %>% mutate(
+    # `Count` = rep(1)
+    `Count` = `Grade 12 students`
+  )
+  
+  agg2 <- aggregate(
+    data=agg1, `Count` ~ `Over median completion rate` + `Average household income under threshold`, FUN=sum
+  ) %>% mutate(
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg2)
+  rm(agg2, agg1, medianVal, labelUnder, labelOver, analysis)
+  
+}
+
+compare55 <- rbind(
+  householdInc(analysis17, 55000, 2017), 
+  householdInc(analysis18, 55000, 2018), 
+  householdInc(analysis19, 55000, 2019), 
+  householdInc(analysis20, 55000, 2020),
+  householdInc(analysis21, 55000, 2021), 
+  householdInc(analysis22, 55000, 2022), 
+  householdInc(analysis23, 55000, 2023), 
+  householdInc(analysis24, 55000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $55,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
+
+compare65 <- rbind(
+  householdInc(analysis17, 65000, 2017), 
+  householdInc(analysis18, 65000, 2018), 
+  householdInc(analysis19, 65000, 2019), 
+  householdInc(analysis20, 65000, 2020),
+  householdInc(analysis21, 65000, 2021), 
+  householdInc(analysis22, 65000, 2022), 
+  householdInc(analysis23, 65000, 2023), 
+  householdInc(analysis24, 65000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $65,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
+
+compare75 <- rbind(
+  householdInc(analysis17, 75000, 2017), 
+  householdInc(analysis18, 75000, 2018), 
+  householdInc(analysis19, 75000, 2019), 
+  householdInc(analysis20, 75000, 2020),
+  householdInc(analysis21, 75000, 2021), 
+  householdInc(analysis22, 75000, 2022), 
+  householdInc(analysis23, 75000, 2023), 
+  householdInc(analysis24, 75000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $75,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
 
 
+#### End #### 
 
+#### Analyze FAFSAs by ZIP ####
 
+zipInc <- function(analysis0, incomeVal, yearVal){
+  
+  labelUnder <- paste("Under ", dollar(incomeVal), sep="")
+  labelOver <- paste("At least ", dollar(incomeVal), sep="")
+  
+  analysis <- analysis0 
+  
+  analysis <- analysis %>% filter(
+    is.na(`Average household income`)==FALSE, 
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) %>% mutate(
+    `Average household income under threshold` = ifelse(
+      `Average household income` < incomeVal, labelUnder, labelOver
+    )
+  )
+  
+  analysis <- analysis %>% mutate(
+    `FAFSA Completion Rate` = `Completions` / `Grade 12 students`
+  )
+  
+  # medianVal <- median(analysis$`FAFSA Completion Rate`, na.rm=TRUE)
+  medianVal <- sum(analysis$`Completions`, na.rm=TRUE) / sum(analysis$`Grade 12 students`, na.rm=TRUE)
+  
+  analysis <- analysis %>% mutate(
+    `Over median completion rate` = ifelse(`FAFSA Completion Rate` >= medianVal, "Over median", "Under median"), 
+    # `Count` = rep(1)
+    `Count` = `Grade 12 students`
+  )
+  
+  agg1 <- aggregate(
+    data=analysis, `Count` ~ `Over median completion rate` + `Average household income under threshold`, FUN=sum
+  ) %>% mutate(
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg1)
+  rm(agg1, medianVal, labelUnder, labelOver, analysis)
+  
+}
 
+zip85 <- rbind(
+  zipInc(analysis17, 85000, 2017), 
+  zipInc(analysis18, 85000, 2018), 
+  zipInc(analysis19, 85000, 2019), 
+  zipInc(analysis20, 85000, 2020),
+  zipInc(analysis21, 85000, 2021), 
+  zipInc(analysis22, 85000, 2022), 
+  zipInc(analysis23, 85000, 2023), 
+  zipInc(analysis24, 85000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $85,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
 
+zip65 <- rbind(
+  zipInc(analysis17, 65000, 2017), 
+  zipInc(analysis18, 65000, 2018), 
+  zipInc(analysis19, 65000, 2019), 
+  zipInc(analysis20, 65000, 2020),
+  zipInc(analysis21, 65000, 2021), 
+  zipInc(analysis22, 65000, 2022), 
+  zipInc(analysis23, 65000, 2023), 
+  zipInc(analysis24, 65000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $65,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
 
+zip45 <- rbind(
+  zipInc(analysis17, 45000, 2017), 
+  zipInc(analysis18, 45000, 2018), 
+  zipInc(analysis19, 45000, 2019), 
+  zipInc(analysis20, 45000, 2020),
+  zipInc(analysis21, 45000, 2021), 
+  zipInc(analysis22, 45000, 2022), 
+  zipInc(analysis23, 45000, 2023), 
+  zipInc(analysis24, 45000, 2024)
+) %>% pivot_wider(
+  id_cols=c(`Year`, `Average household income under threshold`), 
+  names_from=`Over median completion rate`, 
+  values_from=`Count`
+) %>% filter(
+  `Average household income under threshold`=="Under $45,000"
+) %>% mutate(
+  `Share over median` = `Over median` / (`Over median` + `Under median`)
+)
+
+#### End #### 
+
+#### High schools in high-poverty ZIPs ####
+
+highPovZips <- census %>% select(
+  `ZCTA5`,
+  `Share of population in poverty`, 
+  `Share of children in poverty`
+) 
+
+highPovFunction <- function(merge0, povVal, yearVal){
+  
+  merge1 <- merge0 %>% mutate(
+    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
+  )
+    
+  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  
+  merge1 <- merge1 %>% filter(
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) %>% mutate(
+    `FAFSA completion rate` = `Completions` / `Grade 12 students`
+  )
+  
+  # Pick one of these: 
+  medianVal <- sum(merge1$`Completions`) / sum(merge1$`Grade 12 students`)
+  # medianVal <- median(merge1$`FAFSA completion rate`, na.rm=TRUE)
+  
+  merge1 <- merge1 %>% mutate(
+    `Completion rate above median` = ifelse(`FAFSA completion rate` >= medianVal, "Over FAFSA median", "Under FAFSA median"), 
+    `Poverty rate over threshold` = ifelse(`Share of population in poverty` >= povVal, "Over poverty rate threshold", "Under poverty rate threshold"), 
+    # `Count` = rep(1)
+    `Count` = `Grade 12 students`
+  )
+  
+  agg1 <- aggregate(
+    data=merge1, `Count` ~ `Completion rate above median` + `Poverty rate over threshold`, FUN=sum
+  ) %>% pivot_wider(
+    id_cols=c(`Poverty rate over threshold`), 
+    names_from=`Completion rate above median`, 
+    values_from=`Count`
+  ) %>% mutate(
+    `Share over FAFSA median` = `Over FAFSA median` / (`Over FAFSA median` + `Under FAFSA median`), 
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg1)
+  rm(agg1, merge1, medianVal)
+  
+}
+
+highSchoolPov <- rbind(
+  highPovFunction(merge17, 0.25, 2017), 
+  highPovFunction(merge18, 0.25, 2018), 
+  highPovFunction(merge19, 0.25, 2019), 
+  highPovFunction(merge20, 0.25, 2020), 
+  highPovFunction(merge21, 0.25, 2021), 
+  highPovFunction(merge22, 0.25, 2022), 
+  highPovFunction(merge23, 0.25, 2023), 
+  highPovFunction(merge24, 0.25, 2024) 
+) %>% filter(
+  `Poverty rate over threshold`=="Over poverty rate threshold"
+)
+
+#### End #### 
+
+#### Share of students at high schools in the bottom 20% by poverty that are in the bottom 20% by FAFSA completion #### 
+
+highPovZips <- census %>% select(
+  `ZCTA5`,
+  `Share of population in poverty`, 
+  `Share of children in poverty`
+) 
+
+twentyPov <- function(merge0, yearVal){
+  
+  merge1 <- merge0 %>% mutate(
+    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
+  )
+  
+  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  
+  merge1 <- merge1 %>% filter(
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) %>% mutate(
+    `FAFSA completion rate` = `Completions` / `Grade 12 students`
+  )
+  
+  merge1 <- merge1 %>% mutate(
+    `Quintile: FAFSA completion rate` = ntile(`FAFSA completion rate`, 5), 
+    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5),
+    # `Count` = rep(1)
+    `Count` = `Grade 12 students`
+  )
+  
+  agg1 <- aggregate(
+    data=merge1, `Count` ~ `Quintile: Share of population in poverty` + `Quintile: FAFSA completion rate`, FUN=sum
+  ) %>% pivot_wider(
+    id_cols=c(`Quintile: Share of population in poverty`), 
+    names_from=`Quintile: FAFSA completion rate`, 
+    values_from=`Count`
+  ) %>% filter(
+    `Quintile: Share of population in poverty`==5
+  ) %>% mutate(
+    `Total` = `1` + `2` + `3` + `4` + `5`
+  ) %>% mutate(
+    `Share in bottom 20% by FAFSA` = `1` / `Total`, 
+    `Share in top 20% by FAFSA` = `5` / `Total`
+  ) %>% select(
+    `Quintile: Share of population in poverty`, 
+    `Share in bottom 20% by FAFSA`, 
+    `Share in top 20% by FAFSA`
+  ) %>% mutate(
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg1)
+  rm(agg1, merge1)
+  
+}
+
+twentyTest <- rbind(
+  twentyPov(merge17, 2017), 
+  twentyPov(merge18, 2018), 
+  twentyPov(merge19, 2019), 
+  twentyPov(merge20, 2020), 
+  twentyPov(merge21, 2021), 
+  twentyPov(merge22, 2022), 
+  twentyPov(merge23, 2023), 
+  twentyPov(merge24, 2024)
+)
+
+#### End #### 
+
+#### Bottom 20% of high schools' share of all FAFSAs ####
+
+highPovZips <- census %>% select(
+  `ZCTA5`,
+  `Share of population in poverty`, 
+  `Share of children in poverty`
+) 
+
+twentyShare <- function(merge0, yearVal){
+  
+  merge1 <- merge0 %>% mutate(
+    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
+  )
+  
+  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  
+  merge1 <- merge1 %>% filter(
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) 
+  
+  merge1 <- merge1 %>% mutate(
+    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5)
+  )
+  
+  agg1 <- aggregate(
+    data=merge1, cbind(`Completions`, `Grade 12 students`) ~ `Quintile: Share of population in poverty`, FUN=sum
+  ) 
+  totalFAFSA <- sum(agg1$Completions)
+  totalSeniors <- sum(agg1$`Grade 12 students`)
+  agg1 <- agg1 %>% mutate(
+    `Share of FAFSAs` = `Completions` / `totalFAFSA`, 
+    `Share of seniors` = `Grade 12 students` / `totalSeniors`
+  # ) %>% filter(
+  #   `Quintile: Share of population in poverty` == 5
+  ) %>% select(
+    `Quintile: Share of population in poverty`,
+    `Share of FAFSAs`, 
+    `Share of seniors`
+  ) %>% mutate(
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg1)
+  rm(totalFAFSA, totalSeniors, agg1, merge1)
+  
+}
+
+twentyShareTest <- rbind(
+  twentyShare(merge17, 2017), 
+  twentyShare(merge18, 2018), 
+  twentyShare(merge19, 2019), 
+  twentyShare(merge20, 2020), 
+  twentyShare(merge21, 2021), 
+  twentyShare(merge22, 2022), 
+  twentyShare(merge23, 2023), 
+  twentyShare(merge24, 2024)
+) %>% arrange(
+  `Quintile: Share of population in poverty`, `Year`
+) %>% mutate(
+  `Index` = `Share of FAFSAs` / `Share of seniors`
+)
+
+#### End #### 
+
+#### Expected vs. actual FAFSA completions ####
+
+highPovZips <- census %>% select(
+  `ZCTA5`,
+  `Share of population in poverty`, 
+  `Share of children in poverty`
+) 
+
+expectedActual <- function(merge0, yearVal){
+  
+  merge1 <- merge0 %>% mutate(
+    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
+  )
+  
+  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  
+  merge1 <- merge1 %>% filter(
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) 
+  
+  overallRate <- sum(merge1$`Completions`, na.rm=TRUE) / sum(merge1$`Grade 12 students`, na.rm=TRUE)
+  
+  merge1 <- merge1 %>% mutate(
+    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5)
+  )
+  
+  agg1 <- aggregate(
+    data=merge1, cbind(`Completions`, `Grade 12 students`) ~ `Quintile: Share of population in poverty`, FUN=sum
+  ) %>% mutate(
+    `Expected FAFSAs` = `Grade 12 students` * overallRate,
+    `Actual FAFSAs` = `Completions`
+  ) %>% mutate(
+    `Delta` = `Actual FAFSAs` - `Expected FAFSAs`
+  ) %>% mutate(
+    `Delta per 10,000 students` = (`Delta` / `Grade 12 students`) * 10000, 
+    `Year` = rep(yearVal)
+  ) 
+  
+  return(agg1)
+  rm(agg1, overallRate, merge1)
+}
+
+expectedActualTest <- rbind(
+  expectedActual(merge17, 2017), 
+  expectedActual(merge18, 2018), 
+  expectedActual(merge19, 2019), 
+  expectedActual(merge20, 2020), 
+  expectedActual(merge21, 2021), 
+  expectedActual(merge22, 2022), 
+  expectedActual(merge23, 2023), 
+  expectedActual(merge24, 2024)
+) %>% arrange(
+  `Quintile: Share of population in poverty`, `Year`
+)
+
+plot1 <- expectedActualTest %>% filter(
+  `Quintile: Share of population in poverty` == 5
+) %>% select(
+  `Year`,
+  `Expected FAFSAs`, 
+  `Actual FAFSAs`
+) %>% pivot_longer(
+  cols=c(`Expected FAFSAs`, `Actual FAFSAs`),
+  names_to="Measure", 
+  values_to="Number of FAFSAs"
+)
+plot1$`Measure`[plot1$`Measure`=="Expected FAFSAs"] <- "Expected FAFSAs Based on National Completion Rate"
+plot1$`Measure`[plot1$`Measure`=="Actual FAFSAs"] <- "Actual FAFSAs, High-Poverty Communities"
+ggplot(data=plot1, mapping=aes(x=Year, y=`Number of FAFSAs`, group=`Measure`, color=`Measure`)) + geom_point(size=2.5) + geom_line(linewidth=1.5) + scale_y_continuous(limits=c(200000, 350000), labels=comma) + theme(legend.position = "bottom") + labs(y="Number of FAFSA completions", color="") + scale_color_manual(values=c("#8DAFCA", "blue4")) + guides(color = guide_legend(nrow = 2))
+
+#### End #### 
+
+#### Charts on income, attainment, and race ####
+
+quintilePlot(quintiles.national, "Groups: Average household income", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
+quintilePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
+quintilePlot(quintiles.national, "Groups: No college share", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
+quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
+
+#### End #### 
+
+#### [Alternative methods] Share of high schools in the bottom 20% by poverty that are in the bottom 20% by FAFSA completion #### 
+
+highPovZips <- census %>% select(
+  `ZCTA5`,
+  `Share of population in poverty`, 
+  `Share of children in poverty`
+) 
+
+twentyPov2 <- function(merge0, yearVal, seniorThreshold){
+  
+  merge1 <- merge0 %>% mutate(
+    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
+  )
+  
+  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  
+  merge1 <- merge1 %>% filter(
+    is.na(`Completions`)==FALSE, 
+    is.na(`Grade 12 students`)==FALSE
+  ) %>% mutate(
+    `FAFSA completion rate` = `Completions` / `Grade 12 students`
+  ) %>% filter(
+    `Grade 12 students` >= seniorThreshold
+  )
+  
+  merge1 <- merge1 %>% mutate(
+    `Quintile: FAFSA completion rate` = ntile(`FAFSA completion rate`, 5), 
+    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5),
+    `Count` = rep(1)
+    # `Count` = `Grade 12 students`
+  )
+  
+  agg1 <- aggregate(
+    data=merge1, `Count` ~ `Quintile: Share of population in poverty` + `Quintile: FAFSA completion rate`, FUN=sum
+  ) %>% pivot_wider(
+    id_cols=c(`Quintile: Share of population in poverty`), 
+    names_from=`Quintile: FAFSA completion rate`, 
+    values_from=`Count`
+  ) %>% filter(
+    `Quintile: Share of population in poverty`==5
+  ) %>% mutate(
+    `Total` = `1` + `2` + `3` + `4` + `5`
+  ) %>% mutate(
+    `Share in bottom 20% by FAFSA` = `1` / `Total`, 
+    `Share in top 20% by FAFSA` = `5` / `Total`
+  ) %>% select(
+    `Quintile: Share of population in poverty`, 
+    `Share in bottom 20% by FAFSA`, 
+    `Share in top 20% by FAFSA`, 
+    `Total`
+  ) %>% mutate(
+    `Year` = rep(yearVal)
+  )
+  
+  return(agg1)
+  rm(agg1, merge1)
+  
+}
+
+twentyTest2 <- rbind(
+  twentyPov2(merge17, 2017, 30), 
+  twentyPov2(merge18, 2018, 30), 
+  twentyPov2(merge19, 2019, 30), 
+  twentyPov2(merge20, 2020, 30), 
+  twentyPov2(merge21, 2021, 30), 
+  twentyPov2(merge22, 2022, 30), 
+  twentyPov2(merge23, 2023, 30), 
+  twentyPov2(merge24, 2024, 30)
+)
+
+#### End #### 
 
