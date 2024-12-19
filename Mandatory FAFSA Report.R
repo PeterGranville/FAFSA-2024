@@ -36,6 +36,10 @@ decileDF <- data.frame(`InterestVar` = (1:10), `Tile` = c(
 
 #### End #### 
 
+########################################
+#### Set up demographic dataset     ####
+########################################
+
 #### Set up ZIPs data set ####
 
 setwd("/Users/peter_granville/FAFSA-2024/ZIP data")
@@ -147,7 +151,7 @@ processFafsa <- function(fafsa){
   }
   
   fafsa$`Submissions`[fafsa$`Submissions`=="<5"] <- "0"
-  fafsa$`Submissions`[fafsa$`Completions`=="<5"] <- "0"
+  fafsa$`Completions`[fafsa$`Completions`=="<5"] <- "0"
   
   suppressWarnings({
     fafsa <- fafsa %>% mutate(
@@ -355,6 +359,103 @@ fafsa18 <- fafsa18 %>% filter((`Submissions` > 0) | (`Completions` > 0))
 fafsa17 <- fafsa17 %>% filter((`Submissions` > 0) | (`Completions` > 0))
 
 #### End #### 
+
+########################################
+#### Table 1: Change in completions ####
+#### (Public schools only)          ####
+########################################
+
+#### Write function ####
+
+runTable1 <- function(fafsa0, state0, year1, year2){
+  
+  fafsa1 <- fafsa0 %>% filter(
+    `Year` %in% c(year1, year2) 
+  ) %>% mutate(
+    `State Category` = ifelse(
+      `State` == state0, "Selected State", "Rest of U.S."
+    )
+  ) 
+  fafsa1 <- aggregate(
+    data=fafsa1, `Completions` ~ `State Category` + `Year`, FUN=sum
+  ) %>% pivot_wider(
+    id_cols=c(`State Category`), 
+    names_from=`Year`, 
+    values_from=`Completions`
+  ) 
+  names(fafsa1)[2] <- "Before policy"
+  names(fafsa1)[3] <- "After policy"
+  
+  fafsa1 <- fafsa1 %>% mutate(
+    `Change` = (`After policy` - `Before policy`) / `Before policy`
+  )
+  
+  baselineVal <- fafsa1$Change[1] 
+  fafsa1 <- fafsa1 %>% mutate(
+    `Over baseline` = `Change` - baselineVal
+  )
+  
+  return(fafsa1)
+  rm(fafsa1, baselineVal)
+  
+}
+
+#### End #### 
+
+#### Merge data #### 
+
+t1publics17 <- fafsa17 %>% mutate(`Year` = "Class of 2017")
+t1publics18 <- fafsa18 %>% mutate(`Year` = "Class of 2018")
+t1publics19 <- fafsa19 %>% mutate(`Year` = "Class of 2019")
+t1publics20 <- fafsa20 %>% mutate(`Year` = "Class of 2020")
+t1publics21 <- fafsa21 %>% mutate(`Year` = "Class of 2021")
+t1publics22 <- fafsa22 %>% mutate(`Year` = "Class of 2022")
+t1publics23 <- fafsa23 %>% mutate(`Year` = "Class of 2023")
+t1publics24 <- fafsa24 %>% mutate(`Year` = "Class of 2024")
+
+t1publics <- rbind(
+  t1publics17,
+  t1publics18,
+  t1publics19,
+  t1publics20,
+  t1publics21,
+  t1publics22,
+  t1publics23,
+  t1publics24
+)
+
+rm(
+  t1publics17,
+  t1publics18,
+  t1publics19,
+  t1publics20,
+  t1publics21,
+  t1publics22,
+  t1publics23,
+  t1publics24
+)
+
+#### End #### 
+
+#### Find results #### 
+
+runTable1(t1publics, "LA", "Class of 2017", "Class of 2018")
+runTable1(t1publics, "IL", "Class of 2020", "Class of 2021")
+runTable1(t1publics, "AL", "Class of 2021", "Class of 2022")
+runTable1(t1publics, "TX", "Class of 2021", "Class of 2022")
+runTable1(t1publics, "IN", "Class of 2023", "Class of 2024")
+runTable1(t1publics, "NH", "Class of 2023", "Class of 2024")
+runTable1(t1publics, "CA", "Class of 2022", "Class of 2023")
+runTable1(t1publics, "CO", "Class of 2021", "Class of 2022")
+runTable1(t1publics, "MD", "Class of 2022", "Class of 2023")
+
+rm(t1publics)
+
+#### End #### 
+
+########################################
+#### Finish high school merge       ####
+########################################
 
 #### Write merge function ####
 
@@ -569,6 +670,38 @@ merge17 <- left_join(
 ) %>% filter(is.na(`Grade 12 students`)==FALSE)
 
 #### End #### 
+
+#### Save high school-level dataset ####
+
+addYear <- function(tempDF, year0){
+  
+  tempDF <- tempDF %>% mutate(
+    `Year` = rep(year0)
+  )
+  return(tempDF)
+  
+}
+
+mergeAll <- rbind(
+  addYear(merge24, "Class of 2024"), 
+  addYear(merge23, "Class of 2023"), 
+  addYear(merge22, "Class of 2022"), 
+  addYear(merge21, "Class of 2021"), 
+  addYear(merge20, "Class of 2020"), 
+  addYear(merge19, "Class of 2019"), 
+  addYear(merge18, "Class of 2018"), 
+  addYear(merge17, "Class of 2017")
+)
+
+rm(addYear)
+
+calSoap <- mergeAll
+
+#### End #### 
+
+########################################
+#### Demographic analysis           ####
+########################################
 
 #### Census data: Native vs. foreign-born ####
 
@@ -1411,97 +1544,151 @@ onefivePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYea
 #### Run completion rate by year function ####
 
 # Alabama
-quintilesA1a <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesA1b <- quintilePlot(quintiles.alabama, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesA1c <- quintilePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesA2a <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesA2b <- quintilePlot(quintiles.alabama, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesA2c <- quintilePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesA3a <- onefivePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesA3b <- onefivePlot(quintiles.alabama, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesA3c <- onefivePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesA1a <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesA1b <- quintilePlot(quintiles.alabama, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesA1c <- quintilePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesA2a <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesA2b <- quintilePlot(quintiles.alabama, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesA2c <- quintilePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesA3a <- onefivePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesA3b <- onefivePlot(quintiles.alabama, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesA3c <- onefivePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # California
-quintilesB1a <- quintilePlot(quintiles.california, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesB1b <- quintilePlot(quintiles.california, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesB1c <- quintilePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesB2a <- quintilePlot(quintiles.california, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
-quintilesB2b <- quintilePlot(quintiles.california, "Groups: No college share", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
-quintilesB2c <- quintilePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
-quintilesB3a <- onefivePlot(quintiles.california, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesB3b <- onefivePlot(quintiles.california, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesB3c <- onefivePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesB1a <- quintilePlot(quintiles.california, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesB1b <- quintilePlot(quintiles.california, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesB1c <- quintilePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesB2a <- quintilePlot(quintiles.california, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
+# quintilesB2b <- quintilePlot(quintiles.california, "Groups: No college share", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
+# quintilesB2c <- quintilePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2022", "Class of 2023"))
+# quintilesB3a <- onefivePlot(quintiles.california, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesB3b <- onefivePlot(quintiles.california, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesB3c <- onefivePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # Illinois
-quintilesC1a <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesC1b <- quintilePlot(quintiles.illinois, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesC1c <- quintilePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesC2a <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
-quintilesC2b <- quintilePlot(quintiles.illinois, "Groups: No college share", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
-quintilesC2c <- quintilePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
-quintilesC3a <- onefivePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesC3b <- onefivePlot(quintiles.illinois, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesC3c <- onefivePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesC1a <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesC1b <- quintilePlot(quintiles.illinois, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesC1c <- quintilePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesC2a <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# quintilesC2b <- quintilePlot(quintiles.illinois, "Groups: No college share", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# quintilesC2c <- quintilePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# quintilesC3a <- onefivePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesC3b <- onefivePlot(quintiles.illinois, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesC3c <- onefivePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # Indiana
-quintilesD1a <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesD1b <- quintilePlot(quintiles.indiana, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesD1c <- quintilePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesD2a <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesD2b <- quintilePlot(quintiles.indiana, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesD2c <- quintilePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesD3a <- onefivePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesD3b <- onefivePlot(quintiles.indiana, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesD3c <- onefivePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesD1a <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesD1b <- quintilePlot(quintiles.indiana, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesD1c <- quintilePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesD2a <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesD2b <- quintilePlot(quintiles.indiana, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesD2c <- quintilePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesD3a <- onefivePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesD3b <- onefivePlot(quintiles.indiana, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesD3c <- onefivePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # Louisiana
-quintilesE1a <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesE1b <- quintilePlot(quintiles.louisiana, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesE1c <- quintilePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesE2a <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
-quintilesE2b <- quintilePlot(quintiles.louisiana, "Groups: No college share", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
-quintilesE2c <- quintilePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
-quintilesE3a <- onefivePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesE3b <- onefivePlot(quintiles.louisiana, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesE3c <- onefivePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesE1a <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesE1b <- quintilePlot(quintiles.louisiana, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesE1c <- quintilePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesE2a <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
+# quintilesE2b <- quintilePlot(quintiles.louisiana, "Groups: No college share", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
+# quintilesE2c <- quintilePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2017", "Class of 2018"))
+# quintilesE3a <- onefivePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesE3b <- onefivePlot(quintiles.louisiana, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesE3c <- onefivePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # New Hampshire
-quintilesF1a <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesF1b <- quintilePlot(quintiles.newhampshire, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesF1c <- quintilePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesF2a <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesF2b <- quintilePlot(quintiles.newhampshire, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesF2c <- quintilePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-quintilesF3a <- onefivePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesF3b <- onefivePlot(quintiles.newhampshire, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesF3c <- onefivePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesF1a <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesF1b <- quintilePlot(quintiles.newhampshire, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesF1c <- quintilePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesF2a <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesF2b <- quintilePlot(quintiles.newhampshire, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesF2c <- quintilePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# quintilesF3a <- onefivePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesF3b <- onefivePlot(quintiles.newhampshire, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesF3c <- onefivePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # Texas
-quintilesG1a <- quintilePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesG1b <- quintilePlot(quintiles.texas, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesG1c <- quintilePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesG2a <- quintilePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesG2b <- quintilePlot(quintiles.texas, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesG2c <- quintilePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-quintilesG3a <- onefivePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesG3b <- onefivePlot(quintiles.texas, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesG3c <- onefivePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesG1a <- quintilePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesG1b <- quintilePlot(quintiles.texas, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesG1c <- quintilePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesG2a <- quintilePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesG2b <- quintilePlot(quintiles.texas, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesG2c <- quintilePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# quintilesG3a <- onefivePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesG3b <- onefivePlot(quintiles.texas, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesG3c <- onefivePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # All mandate states
-quintilesX1a <- quintilePlot(quintiles.mandateStates, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesX1b <- quintilePlot(quintiles.mandateStates, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesX1c <- quintilePlot(quintiles.mandateStates, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
-quintilesX3a <- onefivePlot(quintiles.mandateStates, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
-quintilesX3b <- onefivePlot(quintiles.mandateStates, "Groups: No college share", TRUE, FALSE, c("None"))
-quintilesX3c <- onefivePlot(quintiles.mandateStates, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesX1a <- quintilePlot(quintiles.mandateStates, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesX1b <- quintilePlot(quintiles.mandateStates, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesX1c <- quintilePlot(quintiles.mandateStates, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
+# quintilesX3a <- onefivePlot(quintiles.mandateStates, "Groups: Black or Latino share", TRUE, FALSE, c("None"))
+# quintilesX3b <- onefivePlot(quintiles.mandateStates, "Groups: No college share", TRUE, FALSE, c("None"))
+# quintilesX3c <- onefivePlot(quintiles.mandateStates, "Groups: Share of population in poverty", TRUE, FALSE, c("None"))
 
 # National
-quintilesY1a <- quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
-quintilesY1b <- quintilePlot(quintiles.national, "Groups: No college share", FALSE, FALSE, c("None"))
-quintilesY1c <- quintilePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, FALSE, c("None"))
-quintilesY3a <- onefivePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
-quintilesY3b <- onefivePlot(quintiles.national, "Groups: No college share", FALSE, FALSE, c("None"))
-quintilesY3c <- onefivePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, FALSE, c("None"))
+# quintilesY1a <- quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
+# quintilesY1b <- quintilePlot(quintiles.national, "Groups: No college share", FALSE, FALSE, c("None"))
+# quintilesY1c <- quintilePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, FALSE, c("None"))
+# quintilesY3a <- onefivePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
+# quintilesY3b <- onefivePlot(quintiles.national, "Groups: No college share", FALSE, FALSE, c("None"))
+# quintilesY3c <- onefivePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, FALSE, c("None"))
+
+#### End #### 
+
+#### Figures 1-7 carousel: Poverty ####
+
+quintilePlot(quintiles.louisiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2017", "Class of 2018")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.illinois, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2020", "Class of 2021")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.alabama, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.texas, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.california, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2022", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.indiana, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.newhampshire, "Groups: Share of population in poverty", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+#### End #### 
+
+#### Figures 8-14 carousel: Degree attainment ####
+
+quintilePlot(quintiles.louisiana, "Groups: No college share", TRUE, TRUE, c("Class of 2017", "Class of 2018")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.illinois, "Groups: No college share", TRUE, TRUE, c("Class of 2020", "Class of 2021")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.alabama, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.texas, "Groups: No college share", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.california, "Groups: No college share", TRUE, TRUE, c("Class of 2022", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.indiana, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+quintilePlot(quintiles.newhampshire, "Groups: No college share", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3) + labs(fill="Quintile: Share of adults without degrees")
+
+#### End ####
+
+#### Figures 15-21 carousel: Race and ethincity ####
+
+quintilePlot(quintiles.louisiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2017", "Class of 2018")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.illinois, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2020", "Class of 2021")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.alabama, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.texas, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2021", "Class of 2022")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.california, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2022", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.indiana, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
+
+quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share", TRUE, TRUE, c("Class of 2023", "Class of 2024")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3)
 
 #### End #### 
 
@@ -1897,68 +2084,223 @@ decilesY3c <- onetenPlot(deciles.national, "Groups: Share of population in pover
 
 #### End #### 
 
-#### For October commentary ####
+########################################
+#### For commentary with Bill       ####
+########################################
 
-# Run the whole gamut of variables, including Hispanic 
+#### Charts on income, attainment, and race ####
 
-quintilePlot(quintiles.national, "Groups: Native-born share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Foreign-born share: AAOA" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: White share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Black share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Native American share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Asian share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Pacific Islander share" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Other race share" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Two or more races share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Hispanic or Latino share" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Black, Latino, or Native American share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Black, Latino, Native American, or Pacific Islander share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Less than 9th grade share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: High school, no diploma share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: High school diploma share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Some college, no degree share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Associate's degree share" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Bachelor's degree share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Graduate degree share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: No college share" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Associate's or higher share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Households receiving SNAP share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Limited English share", FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Share of population in poverty" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Share of children in poverty" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Average household income" , FALSE, FALSE, c("None"))
-quintilePlot(quintiles.national, "Groups: Average household income (with wages)", FALSE, FALSE, c("None"))
+quintilePlot(quintiles.national, "Groups: Average household income", FALSE, TRUE, c("Class of 2017", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3.5)
+quintilePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, TRUE, c("Class of 2017", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3.5)
+quintilePlot(quintiles.national, "Groups: No college share", FALSE, TRUE, c("Class of 2017", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3.5)
+quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, TRUE, c("Class of 2017", "Class of 2023")) + geom_text(aes(label=percent(`FAFSA completion rate`, accuracy=0.1)), position=position_dodge(width=0.9), vjust=-0.55, size=3.5)
 
-decilePlot(deciles.national, "Groups: Native-born share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Foreign-born share: AAOA" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: White share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Black share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Native American share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Asian share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Pacific Islander share" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Other race share" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Two or more races share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Hispanic or Latino share" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Black or Latino share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Black, Latino, or Native American share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Black, Latino, Native American, or Pacific Islander share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Less than 9th grade share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: High school, no diploma share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: High school diploma share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Some college, no degree share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Associate's degree share" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Bachelor's degree share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Graduate degree share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: No college share" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Associate's or higher share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Households receiving SNAP share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Limited English share", FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Share of population in poverty" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Share of children in poverty" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Average household income" , FALSE, FALSE, c("None"))
-decilePlot(deciles.national, "Groups: Average household income (with wages)", FALSE, FALSE, c("None"))
+#### End #### 
 
+########################################
+#### Are gains widely distributed?  ####
+########################################
+
+#### Write function ####
+
+processT2 <- function(data0, state0, year1, year2, measurement){
+  
+  data1 <- data0 %>% filter(
+    `State` == state0,
+    `Year` %in% c(year1, year2)
+  ) %>% mutate(
+    `Year` = ifelse(
+      `Year`==year1, "Before policy", ifelse(
+        `Year`==year2, "After policy", NA)
+    ),
+    `Completion rate` = `Completions` / `Grade 12 students`
+  ) %>% filter(
+    is.na(`NCESSCH`)==FALSE
+  )
+  
+  data1 <- aggregate(data=data1, cbind(`Completions`, `Grade 12 students`) ~ `NCESSCH` + `Year`, FUN=sum)
+  
+  data1.students <- data1 %>% pivot_wider(
+    id_cols=c(`NCESSCH`), 
+    names_from=`Year`, 
+    values_from=`Grade 12 students`
+  ) %>% rename(
+    `Grade 12 students before policy` = `Before policy`,
+    `Grade 12 students after policy` = `After policy`
+  )
+  data1.completions <- data1 %>% pivot_wider(
+    id_cols=c(`NCESSCH`), 
+    names_from=`Year`, 
+    values_from=`Completions`
+  ) %>% rename(
+    `Completions before policy` = `Before policy`,
+    `Completions after policy` = `After policy`
+  )
+  data1 <- full_join(x=data1.students, y=data1.completions, by="NCESSCH")
+  rm(data1.students, data1.completions)
+  
+  print(paste("Number of rows before removing those with NAs: ", nrow(data1)))
+  data1 <- data1 %>% filter(
+    is.na(`Grade 12 students before policy`)==FALSE,
+    is.na(`Grade 12 students after policy`)==FALSE,
+    is.na(`Completions after policy`)==FALSE, 
+    is.na(`Completions before policy`)==FALSE
+  )
+  print(paste("Number of rows after removing those with NAs: ", nrow(data1)))
+  
+  data1 <- data1 %>% mutate(
+    `Completion rate before policy` = `Completions before policy` / `Grade 12 students before policy`
+  ) %>% mutate(
+    `Completion rate bracket` = ifelse(
+      between(`Completion rate before policy`, 0, 0.35), "0% to 35%", ifelse(
+        between(`Completion rate before policy`, 0.35, 0.45), "35% to 45%", ifelse(
+          between(`Completion rate before policy`, 0.45, 0.55), "45% to 55%", ifelse(
+            between(`Completion rate before policy`, 0.55, 0.65), "55% to 65%", ifelse(
+              between(`Completion rate before policy`, 0.65, 1), "65% to 100%", NA
+            ) 
+          )
+        )
+      )
+    )
+  )
+  
+  if(measurement=="absolute"){
+    
+    data1 <- aggregate(
+      data=data1, cbind(`Completions before policy`, `Completions after policy`, `Grade 12 students before policy`, `Grade 12 students after policy`) ~ `Completion rate bracket`, FUN=sum
+    ) %>% mutate(
+      `Completion rate before policy` = `Completions before policy` / `Grade 12 students before policy`, 
+      `Completion rate after policy` = `Completions after policy` / `Grade 12 students after policy`
+    ) %>% mutate(
+      `Change in completion rate` = (`Completion rate after policy` - `Completion rate before policy`)
+    )
+    
+    return(data1)
+    rm(data1)
+    
+  }else{
+    
+    data1 <- aggregate(
+      data=data1, cbind(`Completions before policy`, `Completions after policy`) ~ `Completion rate bracket`, FUN=sum
+    ) %>% mutate(
+      `Change in completions` = (`Completions after policy` - `Completions before policy`) / `Completions before policy`
+    )
+    
+    return(data1)
+    rm(data1)
+    
+  }
+  
+  
+}
+
+#### End #### 
+
+#### Run function for absolute changes ####
+
+processT2(
+  data0=mergeAll, 
+  state0="LA", 
+  year1="Class of 2017", 
+  year2="Class of 2018", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="IL", 
+  year1="Class of 2020", 
+  year2="Class of 2021", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="AL", 
+  year1="Class of 2021", 
+  year2="Class of 2022", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="TX", 
+  year1="Class of 2021", 
+  year2="Class of 2022", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="CA", 
+  year1="Class of 2022", 
+  year2="Class of 2023", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="IN", 
+  year1="Class of 2023", 
+  year2="Class of 2024", 
+  measurement="absolute"
+)
+processT2(
+  data0=mergeAll, 
+  state0="NH", 
+  year1="Class of 2023", 
+  year2="Class of 2024", 
+  measurement="absolute"
+)
+
+#### End #### 
+
+#### Run function for relative changes ####
+
+processT2(
+  data0=mergeAll, 
+  state0="LA", 
+  year1="Class of 2017", 
+  year2="Class of 2018", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="IL", 
+  year1="Class of 2020", 
+  year2="Class of 2021", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="AL", 
+  year1="Class of 2021", 
+  year2="Class of 2022", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="TX", 
+  year1="Class of 2021", 
+  year2="Class of 2022", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="CA", 
+  year1="Class of 2022", 
+  year2="Class of 2023", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="IN", 
+  year1="Class of 2023", 
+  year2="Class of 2024", 
+  measurement="relative"
+)
+processT2(
+  data0=mergeAll, 
+  state0="NH", 
+  year1="Class of 2023", 
+  year2="Class of 2024", 
+  measurement="relative"
+)
 
 #### End #### 
 
@@ -2070,629 +2412,1066 @@ ggplotly(figQ4)
 #### End #### 
 
 ########################################
-#### For commentary with Bill       ####
+#### Scatter plot of counties       ####
 ########################################
 
-#### Derive county from ZIP ####
+#### Load data ####
 
-badZIPs <- c(
-  "ZCTA5 03209",
-  "ZCTA5 19326",
-  "ZCTA5 22464",
-  "ZCTA5 23135",
-  "ZCTA5 26839",
-  "ZCTA5 27899",
-  "ZCTA5 36363",
-  "ZCTA5 43624",
-  "ZCTA5 70488",
-  "ZCTA5 71875",
-  "ZCTA5 95057",
-  "ZCTA5 96361", 
-  "ZCTA5 97003"
-)
+# Generated by "State Briefing Books.R" 
 
-addCounty <- function(analysis0){
-  
-  analysis0 <- analysis0 %>% mutate(`County` = rep(NA))
-  for(i in (1:nrow(analysis0))){
-    if((analysis0$`ZCTA5`[i] %in% badZIPs)==FALSE){
-      analysis0$`County`[i] <- reverse_zipcode(substr(analysis0$`ZCTA5`[i], 7, 11))$county
-    }
-  }
-  
-  return(analysis0)
-}
+setwd("/Users/peter_granville/FAFSA-2024/Outputs for State Briefing Books")
 
-analysis17 <- addCounty(analysis17)
-analysis18 <- addCounty(analysis18)
-analysis19 <- addCounty(analysis19)
-analysis20 <- addCounty(analysis20)
-analysis21 <- addCounty(analysis21)
-analysis22 <- addCounty(analysis22)
-analysis23 <- addCounty(analysis23)
-analysis24 <- addCounty(analysis24)
-
-rm(badZIPs)
-
-#### End #### 
-
-#### Analyze FAFSAs by county ####
-
-householdInc <- function(analysis0, incomeVal, yearVal){
-  
-  labelUnder <- paste("Under ", dollar(incomeVal), sep="")
-  labelOver <- paste("At least ", dollar(incomeVal), sep="")
-  
-  analysis <- analysis0 
-  
-  analysis <- analysis %>% filter(
-    is.na(`County`)==FALSE, 
-    is.na(`State`)==FALSE
-  ) %>% mutate(
-    `County-State` = paste(`County`, `State`, sep=", ")
-  )
-  
-  agg1A <- aggregate(data=analysis, cbind(
-    `Grade 12 students`, `Submissions`, `Completions`
-  ) ~ `County-State`, FUN=sum)
-  
-  agg1B <- analysis %>% group_by(`County-State`) %>% summarize(
-    `Average household income` = weighted.mean(x=`Average household income`, w=`Total households (C5)`))
-  
-  agg1 <- left_join(x=agg1A, y=agg1B, by="County-State")
-  rm(agg1A, agg1B)
-  
-  agg1 <- agg1 %>% filter(
-    is.na(`Average household income`)==FALSE, 
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  )
-  
-  agg1 <- agg1 %>% mutate(
-    `Average household income under threshold` = ifelse(
-      `Average household income` < incomeVal, labelUnder, labelOver
-    )
-  )
-  
-  agg1 <- agg1 %>% mutate(
-    `FAFSA Completion Rate` = `Completions` / `Grade 12 students`
-  )
-  
-  medianVal <- median(agg1$`FAFSA Completion Rate`, na.rm=TRUE)
-  # medianVal <- sum(agg1$`Completions`, na.rm=TRUE) / sum(agg1$`Grade 12 students`, na.rm=TRUE)
-  
-  agg1 <- agg1 %>% mutate(
-    `Over median completion rate` = ifelse(`FAFSA Completion Rate` >= medianVal, "Over median", "Under median")
-  )
-  
-  agg1 <- agg1 %>% mutate(
-    # `Count` = rep(1)
-    `Count` = `Grade 12 students`
-  )
-  
-  agg2 <- aggregate(
-    data=agg1, `Count` ~ `Over median completion rate` + `Average household income under threshold`, FUN=sum
-  ) %>% mutate(
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg2)
-  rm(agg2, agg1, medianVal, labelUnder, labelOver, analysis)
-  
-}
-
-compare55 <- rbind(
-  householdInc(analysis17, 55000, 2017), 
-  householdInc(analysis18, 55000, 2018), 
-  householdInc(analysis19, 55000, 2019), 
-  householdInc(analysis20, 55000, 2020),
-  householdInc(analysis21, 55000, 2021), 
-  householdInc(analysis22, 55000, 2022), 
-  householdInc(analysis23, 55000, 2023), 
-  householdInc(analysis24, 55000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $55,000"
+merge.AL <- read.csv(
+  "High School FAFSAs - County level - All data - Alabama.csv", header=TRUE, check.names=FALSE
 ) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-compare65 <- rbind(
-  householdInc(analysis17, 65000, 2017), 
-  householdInc(analysis18, 65000, 2018), 
-  householdInc(analysis19, 65000, 2019), 
-  householdInc(analysis20, 65000, 2020),
-  householdInc(analysis21, 65000, 2021), 
-  householdInc(analysis22, 65000, 2022), 
-  householdInc(analysis23, 65000, 2023), 
-  householdInc(analysis24, 65000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $65,000"
-) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-compare75 <- rbind(
-  householdInc(analysis17, 75000, 2017), 
-  householdInc(analysis18, 75000, 2018), 
-  householdInc(analysis19, 75000, 2019), 
-  householdInc(analysis20, 75000, 2020),
-  householdInc(analysis21, 75000, 2021), 
-  householdInc(analysis22, 75000, 2022), 
-  householdInc(analysis23, 75000, 2023), 
-  householdInc(analysis24, 75000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $75,000"
-) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-
-#### End #### 
-
-#### Analyze FAFSAs by ZIP ####
-
-zipInc <- function(analysis0, incomeVal, yearVal){
-  
-  labelUnder <- paste("Under ", dollar(incomeVal), sep="")
-  labelOver <- paste("At least ", dollar(incomeVal), sep="")
-  
-  analysis <- analysis0 
-  
-  analysis <- analysis %>% filter(
-    is.na(`Average household income`)==FALSE, 
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) %>% mutate(
-    `Average household income under threshold` = ifelse(
-      `Average household income` < incomeVal, labelUnder, labelOver
-    )
-  )
-  
-  analysis <- analysis %>% mutate(
-    `FAFSA Completion Rate` = `Completions` / `Grade 12 students`
-  )
-  
-  # medianVal <- median(analysis$`FAFSA Completion Rate`, na.rm=TRUE)
-  medianVal <- sum(analysis$`Completions`, na.rm=TRUE) / sum(analysis$`Grade 12 students`, na.rm=TRUE)
-  
-  analysis <- analysis %>% mutate(
-    `Over median completion rate` = ifelse(`FAFSA Completion Rate` >= medianVal, "Over median", "Under median"), 
-    # `Count` = rep(1)
-    `Count` = `Grade 12 students`
-  )
-  
-  agg1 <- aggregate(
-    data=analysis, `Count` ~ `Over median completion rate` + `Average household income under threshold`, FUN=sum
-  ) %>% mutate(
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg1)
-  rm(agg1, medianVal, labelUnder, labelOver, analysis)
-  
-}
-
-zip85 <- rbind(
-  zipInc(analysis17, 85000, 2017), 
-  zipInc(analysis18, 85000, 2018), 
-  zipInc(analysis19, 85000, 2019), 
-  zipInc(analysis20, 85000, 2020),
-  zipInc(analysis21, 85000, 2021), 
-  zipInc(analysis22, 85000, 2022), 
-  zipInc(analysis23, 85000, 2023), 
-  zipInc(analysis24, 85000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $85,000"
-) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-zip65 <- rbind(
-  zipInc(analysis17, 65000, 2017), 
-  zipInc(analysis18, 65000, 2018), 
-  zipInc(analysis19, 65000, 2019), 
-  zipInc(analysis20, 65000, 2020),
-  zipInc(analysis21, 65000, 2021), 
-  zipInc(analysis22, 65000, 2022), 
-  zipInc(analysis23, 65000, 2023), 
-  zipInc(analysis24, 65000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $65,000"
-) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-zip45 <- rbind(
-  zipInc(analysis17, 45000, 2017), 
-  zipInc(analysis18, 45000, 2018), 
-  zipInc(analysis19, 45000, 2019), 
-  zipInc(analysis20, 45000, 2020),
-  zipInc(analysis21, 45000, 2021), 
-  zipInc(analysis22, 45000, 2022), 
-  zipInc(analysis23, 45000, 2023), 
-  zipInc(analysis24, 45000, 2024)
-) %>% pivot_wider(
-  id_cols=c(`Year`, `Average household income under threshold`), 
-  names_from=`Over median completion rate`, 
-  values_from=`Count`
-) %>% filter(
-  `Average household income under threshold`=="Under $45,000"
-) %>% mutate(
-  `Share over median` = `Over median` / (`Over median` + `Under median`)
-)
-
-#### End #### 
-
-#### High schools in high-poverty ZIPs ####
-
-highPovZips <- census %>% select(
-  `ZCTA5`,
-  `Share of population in poverty`, 
-  `Share of children in poverty`
+  `State` = rep("AL")
 ) 
-
-highPovFunction <- function(merge0, povVal, yearVal){
-  
-  merge1 <- merge0 %>% mutate(
-    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
-  )
-    
-  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
-  
-  merge1 <- merge1 %>% filter(
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) %>% mutate(
-    `FAFSA completion rate` = `Completions` / `Grade 12 students`
-  )
-  
-  # Pick one of these: 
-  medianVal <- sum(merge1$`Completions`) / sum(merge1$`Grade 12 students`)
-  # medianVal <- median(merge1$`FAFSA completion rate`, na.rm=TRUE)
-  
-  merge1 <- merge1 %>% mutate(
-    `Completion rate above median` = ifelse(`FAFSA completion rate` >= medianVal, "Over FAFSA median", "Under FAFSA median"), 
-    `Poverty rate over threshold` = ifelse(`Share of population in poverty` >= povVal, "Over poverty rate threshold", "Under poverty rate threshold"), 
-    # `Count` = rep(1)
-    `Count` = `Grade 12 students`
-  )
-  
-  agg1 <- aggregate(
-    data=merge1, `Count` ~ `Completion rate above median` + `Poverty rate over threshold`, FUN=sum
-  ) %>% pivot_wider(
-    id_cols=c(`Poverty rate over threshold`), 
-    names_from=`Completion rate above median`, 
-    values_from=`Count`
-  ) %>% mutate(
-    `Share over FAFSA median` = `Over FAFSA median` / (`Over FAFSA median` + `Under FAFSA median`), 
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg1)
-  rm(agg1, merge1, medianVal)
-  
-}
-
-highSchoolPov <- rbind(
-  highPovFunction(merge17, 0.25, 2017), 
-  highPovFunction(merge18, 0.25, 2018), 
-  highPovFunction(merge19, 0.25, 2019), 
-  highPovFunction(merge20, 0.25, 2020), 
-  highPovFunction(merge21, 0.25, 2021), 
-  highPovFunction(merge22, 0.25, 2022), 
-  highPovFunction(merge23, 0.25, 2023), 
-  highPovFunction(merge24, 0.25, 2024) 
-) %>% filter(
-  `Poverty rate over threshold`=="Over poverty rate threshold"
-)
-
-#### End #### 
-
-#### Share of students at high schools in the bottom 20% by poverty that are in the bottom 20% by FAFSA completion #### 
-
-highPovZips <- census %>% select(
-  `ZCTA5`,
-  `Share of population in poverty`, 
-  `Share of children in poverty`
-) 
-
-twentyPov <- function(merge0, yearVal){
-  
-  merge1 <- merge0 %>% mutate(
-    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
-  )
-  
-  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
-  
-  merge1 <- merge1 %>% filter(
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) %>% mutate(
-    `FAFSA completion rate` = `Completions` / `Grade 12 students`
-  )
-  
-  merge1 <- merge1 %>% mutate(
-    `Quintile: FAFSA completion rate` = ntile(`FAFSA completion rate`, 5), 
-    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5),
-    # `Count` = rep(1)
-    `Count` = `Grade 12 students`
-  )
-  
-  agg1 <- aggregate(
-    data=merge1, `Count` ~ `Quintile: Share of population in poverty` + `Quintile: FAFSA completion rate`, FUN=sum
-  ) %>% pivot_wider(
-    id_cols=c(`Quintile: Share of population in poverty`), 
-    names_from=`Quintile: FAFSA completion rate`, 
-    values_from=`Count`
-  ) %>% filter(
-    `Quintile: Share of population in poverty`==5
-  ) %>% mutate(
-    `Total` = `1` + `2` + `3` + `4` + `5`
-  ) %>% mutate(
-    `Share in bottom 20% by FAFSA` = `1` / `Total`, 
-    `Share in top 20% by FAFSA` = `5` / `Total`
-  ) %>% select(
-    `Quintile: Share of population in poverty`, 
-    `Share in bottom 20% by FAFSA`, 
-    `Share in top 20% by FAFSA`
-  ) %>% mutate(
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg1)
-  rm(agg1, merge1)
-  
-}
-
-twentyTest <- rbind(
-  twentyPov(merge17, 2017), 
-  twentyPov(merge18, 2018), 
-  twentyPov(merge19, 2019), 
-  twentyPov(merge20, 2020), 
-  twentyPov(merge21, 2021), 
-  twentyPov(merge22, 2022), 
-  twentyPov(merge23, 2023), 
-  twentyPov(merge24, 2024)
-)
-
-#### End #### 
-
-#### Bottom 20% of high schools' share of all FAFSAs ####
-
-highPovZips <- census %>% select(
-  `ZCTA5`,
-  `Share of population in poverty`, 
-  `Share of children in poverty`
-) 
-
-twentyShare <- function(merge0, yearVal){
-  
-  merge1 <- merge0 %>% mutate(
-    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
-  )
-  
-  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
-  
-  merge1 <- merge1 %>% filter(
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) 
-  
-  merge1 <- merge1 %>% mutate(
-    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5)
-  )
-  
-  agg1 <- aggregate(
-    data=merge1, cbind(`Completions`, `Grade 12 students`) ~ `Quintile: Share of population in poverty`, FUN=sum
-  ) 
-  totalFAFSA <- sum(agg1$Completions)
-  totalSeniors <- sum(agg1$`Grade 12 students`)
-  agg1 <- agg1 %>% mutate(
-    `Share of FAFSAs` = `Completions` / `totalFAFSA`, 
-    `Share of seniors` = `Grade 12 students` / `totalSeniors`
-  # ) %>% filter(
-  #   `Quintile: Share of population in poverty` == 5
-  ) %>% select(
-    `Quintile: Share of population in poverty`,
-    `Share of FAFSAs`, 
-    `Share of seniors`
-  ) %>% mutate(
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg1)
-  rm(totalFAFSA, totalSeniors, agg1, merge1)
-  
-}
-
-twentyShareTest <- rbind(
-  twentyShare(merge17, 2017), 
-  twentyShare(merge18, 2018), 
-  twentyShare(merge19, 2019), 
-  twentyShare(merge20, 2020), 
-  twentyShare(merge21, 2021), 
-  twentyShare(merge22, 2022), 
-  twentyShare(merge23, 2023), 
-  twentyShare(merge24, 2024)
-) %>% arrange(
-  `Quintile: Share of population in poverty`, `Year`
+merge.CA <- read.csv(
+  "High School FAFSAs - County level - All data - California.csv", header=TRUE, check.names=FALSE
 ) %>% mutate(
-  `Index` = `Share of FAFSAs` / `Share of seniors`
+  `State` = rep("CA")
+)
+merge.IL <- read.csv(
+  "High School FAFSAs - County level - All data - Illinois.csv", header=TRUE, check.names=FALSE
+) %>% mutate(
+  `State` = rep("IL")
+)
+merge.LA <- read.csv(
+  "High School FAFSAs - County level - All data - Louisiana.csv", header=TRUE, check.names=FALSE
+) %>% mutate(
+  `State` = rep("LA")
+)
+merge.TX <- read.csv(
+  "High School FAFSAs - County level - All data - Texas.csv", header=TRUE, check.names=FALSE
+) %>% mutate(
+  `State` = rep("TX")
 )
 
-#### End #### 
-
-#### Expected vs. actual FAFSA completions ####
-
-highPovZips <- census %>% select(
-  `ZCTA5`,
-  `Share of population in poverty`, 
-  `Share of children in poverty`
-) 
-
-expectedActual <- function(merge0, yearVal){
-  
-  merge1 <- merge0 %>% mutate(
-    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
-  )
-  
-  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
-  
-  merge1 <- merge1 %>% filter(
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) 
-  
-  overallRate <- sum(merge1$`Completions`, na.rm=TRUE) / sum(merge1$`Grade 12 students`, na.rm=TRUE)
-  
-  merge1 <- merge1 %>% mutate(
-    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5)
-  )
-  
-  agg1 <- aggregate(
-    data=merge1, cbind(`Completions`, `Grade 12 students`) ~ `Quintile: Share of population in poverty`, FUN=sum
-  ) %>% mutate(
-    `Expected FAFSAs` = `Grade 12 students` * overallRate,
-    `Actual FAFSAs` = `Completions`
-  ) %>% mutate(
-    `Delta` = `Actual FAFSAs` - `Expected FAFSAs`
-  ) %>% mutate(
-    `Delta per 10,000 students` = (`Delta` / `Grade 12 students`) * 10000, 
-    `Year` = rep(yearVal)
-  ) 
-  
-  return(agg1)
-  rm(agg1, overallRate, merge1)
-}
-
-expectedActualTest <- rbind(
-  expectedActual(merge17, 2017), 
-  expectedActual(merge18, 2018), 
-  expectedActual(merge19, 2019), 
-  expectedActual(merge20, 2020), 
-  expectedActual(merge21, 2021), 
-  expectedActual(merge22, 2022), 
-  expectedActual(merge23, 2023), 
-  expectedActual(merge24, 2024)
-) %>% arrange(
-  `Quintile: Share of population in poverty`, `Year`
+mergeCounty <- rbind(
+  merge.AL, merge.CA, merge.IL, merge.LA, merge.TX
 )
+rm(merge.AL, merge.CA, merge.IL, merge.LA, merge.TX)
 
-plot1 <- expectedActualTest %>% filter(
-  `Quintile: Share of population in poverty` == 5
+importEnrollment <- mergeCounty %>% filter(
+  `Year`=="Class of 2023"
 ) %>% select(
-  `Year`,
-  `Expected FAFSAs`, 
-  `Actual FAFSAs`
-) %>% pivot_longer(
-  cols=c(`Expected FAFSAs`, `Actual FAFSAs`),
-  names_to="Measure", 
-  values_to="Number of FAFSAs"
+  `County`, `State`, `Grade 12 students`
 )
-plot1$`Measure`[plot1$`Measure`=="Expected FAFSAs"] <- "Expected FAFSAs Based on National Completion Rate"
-plot1$`Measure`[plot1$`Measure`=="Actual FAFSAs"] <- "Actual FAFSAs, High-Poverty Communities"
-ggplot(data=plot1, mapping=aes(x=Year, y=`Number of FAFSAs`, group=`Measure`, color=`Measure`)) + geom_point(size=2.5) + geom_line(linewidth=1.5) + scale_y_continuous(limits=c(200000, 350000), labels=comma) + theme(legend.position = "bottom") + labs(y="Number of FAFSA completions", color="") + scale_color_manual(values=c("#8DAFCA", "blue4")) + guides(color = guide_legend(nrow = 2))
+mergeCounty <- mergeCounty %>% filter(
+  `Year` %in% c("Class of 2017", "Class of 2023")
+) %>% pivot_wider(
+  id_cols=c(`County`, `State`), 
+  names_from=`Year`, 
+  values_from=`Completion rate`
+)
+mergeCounty <- left_join(x=mergeCounty, y=importEnrollment, by=c("County", "State"))
+rm(importEnrollment)
+
+setwd("/Users/peter_granville/FAFSA-2024/Census data/ACSST5Y2022.S1701_2024-11-14T222327")
+countyPov <- read.csv(
+  "ACSST5Y2022.S1701-Data.csv", header=TRUE
+) %>% filter(
+  `NAME` != "Geographic Area Name"
+) %>% select(
+  `NAME`, 
+  `S1701_C01_001E`, # Estimate!!Total!!Population for whom poverty status is determined
+  `S1701_C02_001E` # Estimate!!Below poverty level!!Population for whom poverty status is determined
+) %>% mutate(
+  `S1701_C01_001E` = as.numeric(`S1701_C01_001E`),
+  `S1701_C02_001E` = as.numeric(`S1701_C02_001E`) 
+) %>% mutate(
+  `Poverty rate` = `S1701_C02_001E` / `S1701_C01_001E`
+) %>% rename(
+  `County` = `NAME`
+) %>% mutate(
+  `County name` = rep(NA), 
+  `State name` = rep(NA)
+)
+for(i in (1:nrow(countyPov))){
+  countyPov$`County name`[i] <- (strsplit(countyPov$County, ", ")[i])[[1]][1]
+  countyPov$`State name`[i] <- (strsplit(countyPov$County, ", ")[i])[[1]][2]
+}
+rm(i)
+countyPov <- countyPov %>% select(
+  `County name`, 
+  `State name`, 
+  `Poverty rate`
+) %>% filter(
+  `State name` %in% c("Alabama", "California", "Illinois", "Louisiana", "Texas")
+)
+countyPov$`State name`[countyPov$`State name`=="Alabama"] <- "AL"
+countyPov$`State name`[countyPov$`State name`=="California"] <- "CA"
+countyPov$`State name`[countyPov$`State name`=="Illinois"] <- "IL"
+countyPov$`State name`[countyPov$`State name`=="Louisiana"] <- "LA"
+countyPov$`State name`[countyPov$`State name`=="Texas"] <- "TX"
+countyPov <- countyPov %>% rename(
+  `County` = `County name`, 
+  `State` = `State name`
+)
+countyPov$County[(countyPov$`County`=="DeKalb County") & (countyPov$`State`=="AL")] <- "De Kalb County"
+countyPov$County[(countyPov$`County`=="St. Clair County") & (countyPov$`State`=="AL")] <- "St Clair County"
+countyPov$County[(countyPov$`County`=="DeKalb County") & (countyPov$`State`=="IL")] <- "De Kalb County"
+countyPov$County[(countyPov$`County`=="DuPage County") & (countyPov$`State`=="IL")] <- "Du Page County"
+countyPov$County[(countyPov$`County`=="LaSalle County") & (countyPov$`State`=="IL")] <- "La Salle County"
+countyPov$County[(countyPov$`County`=="St. Clair County") & (countyPov$`State`=="IL")] <- "St Clair County"
+countyPov$County[(countyPov$`County`=="LaSalle Parish") & (countyPov$`State`=="LA")] <- "La Salle Parish"
+countyPov$County[(countyPov$`County`=="DeWitt County") & (countyPov$`State`=="TX")] <- "De Witt County"
+mergeCounty <- left_join(
+  x=mergeCounty, y=countyPov, by=c("County", "State")
+) %>% filter(
+  is.na(`Class of 2017`)==FALSE, 
+  is.na(`Class of 2023`)==FALSE, 
+  is.na(`Poverty rate`)==FALSE
+)
+rm(countyPov)
 
 #### End #### 
 
-#### Charts on income, attainment, and race ####
+#### Create scatterplot ####
 
-quintilePlot(quintiles.national, "Groups: Average household income", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
-quintilePlot(quintiles.national, "Groups: Share of population in poverty", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
-quintilePlot(quintiles.national, "Groups: No college share", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
-quintilePlot(quintiles.national, "Groups: Black or Latino share", FALSE, TRUE, c("Class of 2017", "Class of 2023"))
+scatter1 <- mergeCounty %>% mutate(
+  `Change, 2017 to 2023` = `Class of 2023` - `Class of 2017`
+)
+# All combined
+ggplot(data=scatter1, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(size=`Grade 12 students`, alpha=1)) + scale_x_continuous(labels=percent_format(accuracy=1)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm")
+# Separated by state
+ggplot(data=scatter1, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(size=`Grade 12 students`, alpha=1)) + facet_grid(`State` ~ .) + scale_x_continuous(labels=percent_format(accuracy=1)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm", color="red")
 
 #### End #### 
 
-#### [Alternative methods] Share of high schools in the bottom 20% by poverty that are in the bottom 20% by FAFSA completion #### 
+########################################
+#### Scatter plot of ZIPs           ####
+########################################
 
-highPovZips <- census %>% select(
+#### Prepare data #### 
+
+analysis17 <- analysis17 %>% mutate(
+  `Year` = rep("Class of 2017")
+)
+analysis23 <- analysis23 %>% mutate(
+  `Year` = rep("Class of 2023")
+)
+
+scatter2 <- rbind(
+  analysis17, 
+  analysis23
+) %>% mutate(
+  `Completion rate` = `Completions` / `Grade 12 students`
+) %>% select(
   `ZCTA5`,
-  `Share of population in poverty`, 
-  `Share of children in poverty`
-) 
+  `State`, 
+  `Completion rate`, 
+  `Year`
+) %>% pivot_wider(
+  id_cols=c(`ZCTA5`, `State`), 
+  names_from=`Year`, 
+  values_from=`Completion rate`
+) %>% mutate(
+  `Change, 2017 to 2023` = `Class of 2023` - `Class of 2017`
+)
 
-twentyPov2 <- function(merge0, yearVal, seniorThreshold){
+importDemographics <- analysis23 %>% select(
+  `ZCTA5`, 
+  `Share of population in poverty`, 
+  `No college share`,
+  `Black or Latino share`
+)
+scatter2 <- left_join(x=scatter2, y=importDemographics, by="ZCTA5")
+rm(importDemographics)
+
+#### End #### 
+
+#### Generate plot ####
+
+scatter2$`State`[(scatter2$`State` %in% c("AL", "CA", "IL", "LA", "TX"))==FALSE] <- "Rest of U.S."
+
+scatter2 <- scatter2 %>% rename(
+  `Poverty rate` = `Share of population in poverty`
+)
+
+ggplot(data=scatter2, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(alpha=1)) + facet_grid(`State` ~ .) + scale_x_continuous(labels=percent_format(accuracy=0.5)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm", color="red")
+
+
+#### End #### 
+
+########################################
+#### Pell change data               ####
+########################################
+
+#### Load Pell data ####
+
+processPell <- function(filename, year0){
   
-  merge1 <- merge0 %>% mutate(
-    `ZCTA5` = paste("ZCTA5 ", `LZIP`, sep="")
-  )
+  setwd("/Users/peter_granville/FAFSA-2024/Pell data")
   
-  merge1 <- left_join(x=merge1, y=highPovZips, by="ZCTA5")
+  tempDF <- read_excel(filename, sheet="Award Year Summary", col_names=FALSE, skip=7) %>% select(`...1`, `...2`, `...3`, `...5`, `...6`, `...7`)
   
-  merge1 <- merge1 %>% filter(
-    is.na(`Completions`)==FALSE, 
-    is.na(`Grade 12 students`)==FALSE
-  ) %>% mutate(
-    `FAFSA completion rate` = `Completions` / `Grade 12 students`
-  ) %>% filter(
-    `Grade 12 students` >= seniorThreshold
-  )
+  names(tempDF) <- c("OPEID", "Name", "State", "Control", "Recipients", "Disbursements")
   
-  merge1 <- merge1 %>% mutate(
-    `Quintile: FAFSA completion rate` = ntile(`FAFSA completion rate`, 5), 
-    `Quintile: Share of population in poverty` = ntile(`Share of population in poverty`, 5),
-    `Count` = rep(1)
-    # `Count` = `Grade 12 students`
-  )
+  tempDF$`Year` <- rep(year0, nrow(tempDF))
   
-  agg1 <- aggregate(
-    data=merge1, `Count` ~ `Quintile: Share of population in poverty` + `Quintile: FAFSA completion rate`, FUN=sum
-  ) %>% pivot_wider(
-    id_cols=c(`Quintile: Share of population in poverty`), 
-    names_from=`Quintile: FAFSA completion rate`, 
-    values_from=`Count`
-  ) %>% filter(
-    `Quintile: Share of population in poverty`==5
-  ) %>% mutate(
-    `Total` = `1` + `2` + `3` + `4` + `5`
-  ) %>% mutate(
-    `Share in bottom 20% by FAFSA` = `1` / `Total`, 
-    `Share in top 20% by FAFSA` = `5` / `Total`
-  ) %>% select(
-    `Quintile: Share of population in poverty`, 
-    `Share in bottom 20% by FAFSA`, 
-    `Share in top 20% by FAFSA`, 
-    `Total`
-  ) %>% mutate(
-    `Year` = rep(yearVal)
-  )
-  
-  return(agg1)
-  rm(agg1, merge1)
+  return(tempDF)
+  rm(tempDF)
   
 }
 
-twentyTest2 <- rbind(
-  twentyPov2(merge17, 2017, 30), 
-  twentyPov2(merge18, 2018, 30), 
-  twentyPov2(merge19, 2019, 30), 
-  twentyPov2(merge20, 2020, 30), 
-  twentyPov2(merge21, 2021, 30), 
-  twentyPov2(merge22, 2022, 30), 
-  twentyPov2(merge23, 2023, 30), 
-  twentyPov2(merge24, 2024, 30)
+suppressWarnings({
+  pell <- rbind(
+    processPell("grants-ay17-18-q4.xls", "2017-18"),
+    processPell("grants-ay18-19-q4.xls", "2018-19"),
+    processPell("grants-ay19-20-q4.xls", "2019-20"),
+    processPell("grants-ay20-21-q4.xls", "2020-21"),
+    processPell("grants-ay21-22-q4.xls", "2021-22"),
+    processPell("grants-ay22-23-q4.xls", "2022-23"), 
+    processPell("grants-ay23-24-q4.xls", "2023-24")
+  ) %>% mutate(
+    `Disbursements` = as.numeric(`Disbursements`)
+  ) %>% mutate(
+    `Recipients` = as.numeric(`Recipients`)
+  ) %>% filter(
+    (`State` %in% c("AS", "FM", "GU", "MH", "MP", "PR", "PW", "VI"))==FALSE
+  )
+})
+
+pell.disbursements <- pell %>% pivot_wider(
+  id_cols=c(`OPEID`, `Name`, `State`, `Control`), 
+  names_from=`Year`, 
+  values_from=`Disbursements`
+)
+pell.recipients <- pell %>% pivot_wider(
+  id_cols=c(`OPEID`, `Name`, `State`, `Control`), 
+  names_from=`Year`, 
+  values_from=`Recipients`
 )
 
 #### End #### 
 
+#### Load Scorecard data ####
+
+setwd("/Users/peter_granville/FAFSA-2024/Scorecard data")
+
+scorecard <- read.csv(
+  "Most-Recent-Cohorts-Institution-Sep2024.csv", header=TRUE
+) %>% select(
+  `OPEID`,
+  `MAIN`,
+  `CONTROL`,
+  `PREDDEG`,
+  `HBCU`,
+  `PBI`,
+  `ANNHI`,
+  `TRIBAL`,
+  `AANAPII`,
+  `HSI`,
+  `NANTI`
+) %>% arrange(
+  desc(`MAIN`)
+) %>% filter(
+  duplicated(`OPEID`)==FALSE
+) %>% select(
+  -(`MAIN`)
+) %>% mutate(
+  `MSI` = ifelse(
+    (`HBCU`==1) | (`PBI`==1) | (`ANNHI`==1) | (`TRIBAL`==1) | (`AANAPII`==1) | (`HSI`==1) | (`NANTI`==1), 
+    1, 0
+  )
+) %>% filter(
+  `OPEID` > 0
+) %>% mutate(
+  `OPEID` = as.character(`OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==1, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==2, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==3, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==4, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==5, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==6, paste("0", `OPEID`, sep=""), `OPEID`)
+) %>% mutate(
+  `OPEID` = ifelse(nchar(`OPEID`)==7, paste("0", `OPEID`, sep=""), `OPEID`)
+) 
+
+#### End #### 
+
+#### Write function ####
+
+processPell <- function(data0, state0, year1, year2, interestVar){
+  
+  setwd("/Users/peter_granville/FAFSA-2024/IPEDS data")
+  
+  data1 <- data0 
+  
+  data1[is.na(data1)] <- 0
+  data1 <- aggregate(data=data1, cbind(
+    `2017-18`, `2018-19`, `2019-20`, `2020-21`, `2021-22`, `2022-23`, `2023-24`
+  ) ~ `OPEID` + `Name` + `State`, FUN=sum)
+  
+  if(year2=="2017-18"){yearHD <- "2018"}
+  if(year2=="2018-19"){yearHD <- "2019"}
+  if(year2=="2019-20"){yearHD <- "2020"}
+  if(year2=="2020-21"){yearHD <- "2021"}
+  if(year2=="2021-22"){yearHD <- "2022"}
+  if(year2=="2022-23"){yearHD <- "2023"}
+  if(year2=="2023-24"){yearHD <- "2023"}
+  
+  if(year1=="2017-18"){yearSFA <- "1718"}
+  if(year1=="2018-19"){yearSFA <- "1819"}
+  if(year1=="2019-20"){yearSFA <- "1920"}
+  if(year1=="2020-21"){yearSFA <- "2021"}
+  if(year1=="2021-22"){yearSFA <- "2122"}
+  if(year1=="2022-23"){yearSFA <- "2122"}
+  if(year1=="2023-24"){yearSFA <- "2122"}
+  
+  filenameHD <- paste("hd", yearHD, ".csv", sep="")
+  filenameEFFY <- paste("effy", yearHD, ".csv", sep="")
+  filenameSFA <- paste("sfa", yearSFA, ".csv", sep="")
+  
+  hd <- read.csv(filenameHD, header=TRUE) %>% select(
+    `UNITID`,
+    `OPEID`, 
+    `SECTOR`
+  ) %>% filter(
+    `OPEID` > 0
+  ) %>% mutate(
+    `OPEID` = as.character(`OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==1, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==2, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==3, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==4, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==5, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==6, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) %>% mutate(
+    `OPEID` = ifelse(nchar(`OPEID`)==7, paste("0", `OPEID`, sep=""), `OPEID`)
+  ) 
+  
+  sfa <- read.csv(filenameSFA, header=TRUE) %>% select(
+    `UNITID`,
+    `UPGRNTP`
+  ) %>% mutate(
+    `UPGRNTP` = ifelse(
+      between(`UPGRNTP`, 0, 30), "Low Pell", ifelse(
+        between(`UPGRNTP`, 30, 60), "Medium Pell", ifelse(
+          between(`UPGRNTP`, 60, 100), "High Pell", NA
+        )
+      )
+    )
+  )
+  
+  hd <- left_join(x=hd, y=sfa, by="UNITID")
+  hd <- left_join(x=hd, y=scorecard, by="OPEID")
+  
+  if(filenameEFFY %in% c(
+    "effy2023.csv", 
+    "effy2022.csv", 
+    "effy2021.csv", 
+    "effy2020.csv"
+  )){
+    effy <- read.csv(filenameEFFY, header=TRUE) %>% select(
+      `UNITID`, 
+      `EFFYALEV`,
+      `EFYTOTLT`
+    ) %>% filter(
+      `EFFYALEV`==1
+    ) %>% select(
+      -(`EFFYALEV`)
+    )
+  }else{
+    effy <- read.csv(filenameEFFY, header=TRUE) %>% select(
+      `UNITID`, 
+      `EFFYLEV`,
+      `EFYTOTLT`
+    ) %>% filter(
+      `EFFYLEV`==1
+    ) %>% select(
+      -(`EFFYLEV`)
+    )
+  }
+  hd <- left_join(x=hd, y=effy, by="UNITID")
+  hd <- hd %>% arrange(
+    `OPEID`, 
+    desc(`EFYTOTLT`)
+  ) %>% filter(
+    duplicated(`OPEID`)==FALSE
+  ) %>% select(
+    -(`EFYTOTLT`), 
+    -(`UNITID`)
+  )
+  
+  data1 <- right_join(x=hd, data1, by="OPEID")
+  
+  data1 <- data1 %>% mutate(
+    `State Category` = ifelse(
+      `State`==state0, "Selected State", "Rest of U.S."
+    )
+  ) %>% select(
+    `OPEID`, 
+    `SECTOR`,
+    `CONTROL`,
+    `PREDDEG`,
+    `HBCU`,
+    `PBI`,
+    `ANNHI`,
+    `TRIBAL`,
+    `AANAPII`,
+    `HSI`,
+    `NANTI`,
+    `MSI`,
+    `UPGRNTP`,
+    `Name`, 
+    `State`, 
+    `State Category`,
+    all_of(year1), 
+    all_of(year2)
+  )
+  names(data1)[17] <- "Before policy"
+  names(data1)[18] <- "After policy"
+  
+  if(interestVar == "SECTOR"){data1 <- data1 %>% mutate(`Variable` = `SECTOR`)}
+  if(interestVar == "CONTROL"){data1 <- data1 %>% mutate(`Variable` = `CONTROL`)}
+  if(interestVar == "PREDDEG"){data1 <- data1 %>% mutate(`Variable` = `PREDDEG`)}
+  if(interestVar == "HBCU"){data1 <- data1 %>% mutate(`Variable` = `HBCU`)}
+  if(interestVar == "PBI"){data1 <- data1 %>% mutate(`Variable` = `PBI`)}
+  if(interestVar == "ANNHI"){data1 <- data1 %>% mutate(`Variable` = `ANNHI`)}
+  if(interestVar == "TRIBAL"){data1 <- data1 %>% mutate(`Variable` = `TRIBAL`)}
+  if(interestVar == "AANAPII"){data1 <- data1 %>% mutate(`Variable` = `AANAPII`)}
+  if(interestVar == "HSI"){data1 <- data1 %>% mutate(`Variable` = `HSI`)}
+  if(interestVar == "NANTI"){data1 <- data1 %>% mutate(`Variable` = `NANTI`)}
+  if(interestVar == "MSI"){data1 <- data1 %>% mutate(`Variable` = `MSI`)}
+  if(interestVar == "UPGRNTP"){data1 <- data1 %>% mutate(`Variable` = `UPGRNTP`)}
+  if(interestVar == "None"){data1 <- data1 %>% mutate(`Variable` = rep("All"))}
+  
+  data1 <- aggregate(data=data1, cbind(
+    `Before policy`, `After policy`
+  ) ~ `State Category` + `Variable`, FUN=sum) %>% mutate(
+    `Percentage change` = (`After policy` - `Before policy`) / `Before policy`
+  ) %>% pivot_wider(
+    id_cols=c(`Variable`), 
+    names_from=`State Category`, 
+    values_from=`Percentage change`
+  ) %>% mutate(
+    `Performance over rest of U.S.` = `Selected State` - `Rest of U.S.`, 
+    `Variable name` = rep(interestVar), 
+    `Selected state` = rep(state0), 
+    `Comparison window` = rep(paste(year1, " to ", year2, sep=""))
+  )
+  
+  return(data1)
+  rm(data1, yearHD, hd, effy, sfa)
+  
+}
+
+#### End #### 
+
+#### Run data ####
+
+recipientsPull <- rbind(
+  
+  # Overall
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "None"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "None"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "None"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "None"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "None"),
+  
+  # CONTROL	1	Public
+  # CONTROL	2	Private not-for-profit
+  # CONTROL	3	Private for-profit
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "CONTROL"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "CONTROL"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "CONTROL"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "CONTROL"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "CONTROL"),
+  
+  # SECTOR	1	Public, 4-year or above
+  # SECTOR	2	Private not-for-profit, 4-year or above
+  # SECTOR	3	Private for-profit, 4-year or above
+  # SECTOR	4	Public, 2-year
+  # SECTOR	5	Private not-for-profit, 2-year
+  # SECTOR	6	Private for-profit, 2-year
+  # SECTOR	7	Public, less-than 2-year
+  # SECTOR	8	Private not-for-profit, less-than 2-year
+  # SECTOR	9	Private for-profit, less-than 2-year
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "SECTOR"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "SECTOR"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "SECTOR"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "SECTOR"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "SECTOR"), 
+  
+  #   PREDDEG 0	Not classified
+  #   PREDDEG 1	Predominantly certificate-degree granting
+  #   PREDDEG 2	Predominantly associate's-degree granting
+  #   PREDDEG 3	Predominantly bachelor's-degree granting
+  #   PREDDEG 4	Entirely graduate-degree granting
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "PREDDEG"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "PREDDEG"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "PREDDEG"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "PREDDEG"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "PREDDEG"), 
+  
+  # HBCU 0	No
+  # HBCU 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "HBCU"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "HBCU"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "HBCU"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "HBCU"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "HBCU"), 
+  
+  # PBI 0	No
+  # PBI 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "PBI"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "PBI"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "PBI"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "PBI"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "PBI"), 
+  
+  # ANNHI 0	No
+  # ANNHI 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "ANNHI"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "ANNHI"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "ANNHI"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "ANNHI"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "ANNHI"), 
+  
+  # TRIBAL 0	No
+  # TRIBAL 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "TRIBAL"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "TRIBAL"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "TRIBAL"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "TRIBAL"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "TRIBAL"), 
+  
+  # AANAPII 0	No
+  # AANAPII 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "AANAPII"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "AANAPII"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "AANAPII"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "AANAPII"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "AANAPII"), 
+  
+  # HSI 0	No
+  # HSI 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "HSI"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "HSI"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "HSI"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "HSI"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "HSI"), 
+  
+  # NANTI 0	No
+  # NANTI 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "NANTI"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "NANTI"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "NANTI"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "NANTI"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "NANTI"), 
+  
+  # MSI 0	No
+  # MSI 1	Yes
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "MSI"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "MSI"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "MSI"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "MSI"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "MSI"), 
+  
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "UPGRNTP"),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "UPGRNTP"),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "UPGRNTP"),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "UPGRNTP"),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "UPGRNTP")
+  
+)
+
+disbursementsPull <- rbind(
+  
+  # Overall
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "None"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "None"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "None"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "None"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "None"),
+  
+  # CONTROL	1	Public
+  # CONTROL	2	Private not-for-profit
+  # CONTROL	3	Private for-profit
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "CONTROL"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "CONTROL"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "CONTROL"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "CONTROL"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "CONTROL"),
+  
+  # SECTOR	1	Public, 4-year or above
+  # SECTOR	2	Private not-for-profit, 4-year or above
+  # SECTOR	3	Private for-profit, 4-year or above
+  # SECTOR	4	Public, 2-year
+  # SECTOR	5	Private not-for-profit, 2-year
+  # SECTOR	6	Private for-profit, 2-year
+  # SECTOR	7	Public, less-than 2-year
+  # SECTOR	8	Private not-for-profit, less-than 2-year
+  # SECTOR	9	Private for-profit, less-than 2-year
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "SECTOR"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "SECTOR"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "SECTOR"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "SECTOR"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "SECTOR"), 
+  
+  #   PREDDEG 0	Not classified
+  #   PREDDEG 1	Predominantly certificate-degree granting
+  #   PREDDEG 2	Predominantly associate's-degree granting
+  #   PREDDEG 3	Predominantly bachelor's-degree granting
+  #   PREDDEG 4	Entirely graduate-degree granting
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "PREDDEG"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "PREDDEG"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PREDDEG"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PREDDEG"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PREDDEG"), 
+  
+  # HBCU 0	No
+  # HBCU 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "HBCU"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "HBCU"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "HBCU"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "HBCU"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "HBCU"), 
+  
+  # PBI 0	No
+  # PBI 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "PBI"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "PBI"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PBI"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PBI"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PBI"), 
+  
+  # ANNHI 0	No
+  # ANNHI 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "ANNHI"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "ANNHI"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "ANNHI"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "ANNHI"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "ANNHI"), 
+  
+  # TRIBAL 0	No
+  # TRIBAL 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "TRIBAL"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "TRIBAL"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "TRIBAL"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "TRIBAL"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "TRIBAL"), 
+  
+  # AANAPII 0	No
+  # AANAPII 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "AANAPII"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "AANAPII"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "AANAPII"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "AANAPII"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "AANAPII"), 
+  
+  # HSI 0	No
+  # HSI 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "HSI"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "HSI"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "HSI"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "HSI"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "HSI"), 
+  
+  # NANTI 0	No
+  # NANTI 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "NANTI"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "NANTI"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "NANTI"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "NANTI"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "NANTI"), 
+  
+  # MSI 0	No
+  # MSI 1	Yes
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "MSI"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "MSI"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "MSI"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "MSI"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "MSI"), 
+  
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "UPGRNTP"),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "UPGRNTP"),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "UPGRNTP"),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "UPGRNTP"),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "UPGRNTP")
+  
+)
+
+#### End #### 
+
+#### Take largest possible window ####
+
+bigWindowR <- rbind(
+  processPell(pell.recipients, "LA", "2017-18", "2023-24", "None"),
+  processPell(pell.recipients, "IL", "2020-21", "2023-24", "None"),
+  processPell(pell.recipients, "AL", "2021-22", "2023-24", "None"),
+  processPell(pell.recipients, "TX", "2021-22", "2023-24", "None")
+)
+
+bigWindowD <- rbind(
+  processPell(pell.disbursements, "LA", "2017-18", "2023-24", "None"),
+  processPell(pell.disbursements, "IL", "2020-21", "2023-24", "None"),
+  processPell(pell.disbursements, "AL", "2021-22", "2023-24", "None"),
+  processPell(pell.disbursements, "TX", "2021-22", "2023-24", "None")
+)
+
+
+#### End #### 
+
+#### Write .csv files ####
+
+setwd("/Users/peter_granville/FAFSA-2024/Pell data")
+
+write.csv(recipientsPull, "Pell recipients.csv", row.names=FALSE)
+write.csv(disbursementsPull, "Pell disbursements.csv", row.names=FALSE)
+
+#### End #### 
+
+########################################
+#### Number of students in a state  ####
+#### with an active policy          ####
+########################################
+
+#### Calculate numbers ####
+
+setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+
+active <- read.csv(
+  "ELSI_csv_export_6386778049035813833342.csv", skip=6, header=TRUE, nrow=51, check.names=FALSE
+) %>% mutate(
+  `Mandatory FAFSA 2025` = ifelse(
+    `State Name` %in% c(
+      "ALABAMA", "CALIFORNIA", "COLORADO", "ILLINOIS", "INDIANA", "MARYLAND", "NEBRASKA", "NEW JERSEY", "NEW YORK", "OKLAHOMA", "TEXAS"
+    ), "Mandate", "No Mandate"
+  )
+)
+total.active <- sum(active$`Grade 12 Students [State] 2022-23`)
+
+aggregate(data=active, `Grade 12 Students [State] 2022-23` ~ `Mandatory FAFSA 2025`, FUN=sum) %>% mutate(`Share of total` = `Grade 12 Students [State] 2022-23` / total.active)
+
+rm(active, total.active)
+
+#### End #### 
+
+########################################
+#### CalSOAP analysis               ####
+########################################
+
+#### Load school list ####
+
+soapSchools <- data.frame(`Consortium` = character(), `Name` = character(), `City` = character())
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Cabrillo High", `City` = "Lompoc")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Lompoc High", `City` = "Lompoc")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Arroyo Grande High", `City` = "Arroyo Grande")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Nipomo High", `City` = "Nipomo")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Lopez Continuation High", `City` = "Arroyo Grande")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Paso Robles High", `City` = "Paso Robles")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Liberty High (Continuation)", `City` = "Paso Robles")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Santa Maria High", `City` = "Santa Maria")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Pioneer Valley High", `City` = "Santa Maria")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Ernest Righetti High", `City` = "Santa Maria")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Delta High", `City` = "Santa Maria")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Coast Consortium", `Name` = "Santa Ynez Valley High", `City` = "Santa Ynez")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Valley Consortium", `Name` = "Firebaugh High", `City` = "Firebaugh")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Valley Consortium", `Name` = "Mendota High", `City` = "Mendota")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Valley Consortium", `Name` = "Kerman High", `City` = "Kerman")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Central Valley Consortium", `Name` = "Tranquillity High", `City` = "Tranquillity")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Centennial High School", `City` = "Compton")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Compton High", `City` = "Compton")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Compton Early College", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Dominguez High", `City` = "Compton")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Cabrillo High", `City` = "Long Beach")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Jordan High", `City` = "Long Beach")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Lakewood High", `City` = "Lakewood")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Millikan High", `City` = "Long Beach")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Poly and PAAL High School", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Firebaugh High School", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Lynwood High", `City` = "Lynwood")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "John H. Glenn High", `City` = "Norwalk")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "California High", `City` = "Whittier")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "La Serna High", `City` = "Whittier")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Pioneer High", `City` = "Whittier")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Santa Fe High", `City` = "Santa Fe Springs")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Long Beach Consortium", `Name` = "Whittier High", `City` = "Whittier")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "El Rancho High", `City` = "Pico Rivera")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Blair High", `City` = "Pasadena")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "John Muir High", `City` = "Pasadena")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "El Monte High", `City` = "El Monte")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Arroyo High", `City` = "El Monte")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Huntington Park Senior High", `City` = "Huntington Park")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Jordan High School", `City` = "Los Angeles")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Sotomayor Arts and Sciences Magnet", `City` = "Los Angeles")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "South East High", `City` = "South Gate")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "South Gate Senior High", `City` = "South Gate")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Maywood Center for Enriched Studies", `City` = "Maywood")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Santee Education Complex", `City` = "Los Angeles")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Sun Valley Magnet", `City` = "Sun Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Valley Oaks Center for Enriched Studies", `City` = "Sun Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Linda Esperanza Marquez High B LIBRA Academy", `City` = "Huntington Park")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Los Angeles Cal-SOAP", `Name` = "Montebello High", `City` = "Montebello")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Atwater High", `City` = "Atwater")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Buhach Colony High", `City` = "Atwater")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Golden Valley High", `City` = "Merced")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Livingston High", `City` = "Livingston")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Merced High", `City` = "Merced")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Come Back Butte Charter", `City` = "Oroville")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Valley Community Schools", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Chowchilla Union High", `City` = "Chowchilla")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Dos Palos High", `City` = "Dos Palos")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "El Capitan High", `City` = "Merced")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Los Banos High", `City` = "Los Banos")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Pacheco High", `City` = "Los Banos")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Le Grand High", `City` = "Le Grand")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Merced Consortium", `Name` = "Hilmar High", `City` = "Hilmar")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Del Norte High", `City` = "Crescent City")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Alder Grove Charter 2", `City` = "Eureka")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Arcata High", `City` = "Arcata")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "McKinleyville High", `City` = "McKinleyville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Six Rivers Charter High", `City` = "Arcata")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Eureka Senior High", `City` = "Eureka")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Fortuna Union High", `City` = "Fortuna")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "Northern United - Humboldt Charter", `City` = "Eureka") # Name changed: NORTHERN UNITED HUMBOLDT CHARTER SCHOOL
+soapSchools <- soapSchools %>% add_row(`Consortium` = "North Coast Consortium", `Name` = "South Fork High", `City` = "Miranda") # Name changed: SOUTH FORK JUNIOR - SENIOR HIGH
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Academy of Innovation", `City` = "Hemet")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Alessandro High", `City` = "Hemet")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Hamilton High", `City` = "Anza")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Hemet High", `City` = "Hemet")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Tahquitz High", `City` = "Hemet")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "West Valley High", `City` = "Hemet")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Canyon Springs High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Moreno Valley High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Valley View High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Vista del Lago High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Bayside Community Day", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "March Mountain High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Murrieta Valley High", `City` = "Murrieta")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Vista Murrieta High", `City` = "Murrieta")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Murrieta Canyon Academy", `City` = "Murrieta")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "California Military Institute", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Heritage High", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Liberty High", `City` = "Winchester")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Paloma Valley High", `City` = "Menifee")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Perris High", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Perris Lake High (Continuation)", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Chaparral High", `City` = "Temecula")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Great Oak High", `City` = "Temecula")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Temecula Valley High", `City` = "Temecula")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Susan H. Nelson", `City` = "Temecula")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Rancho Vista High", `City` = "Temecula")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "San Jacinto High", `City` = "San Jacinto")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Mountain View High", `City` = "San Jacinto")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Mountain Heights Academy", `City` = "San Jacinto")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Citrus Hill High", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Orange Vista High", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Rancho Verde High", `City` = "Moreno Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Riverside County Consortium ", `Name` = "Val Verde High", `City` = "Perris")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Rosemont High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "John F. Kennedy High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Hiram W. Johnson High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Luther Burbank High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Grant Union High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Rio Linda High", `City` = "Rio Linda")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Foothill High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Highlands High", `City` = "North Highlands")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Natomas High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Inderkum High", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Natomas Charter", `City` = "Sacramento")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Westlake High", `City` = "Westlake Village")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Cordova High", `City` = "Rancho Cordova")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Sacramento Consortium", `Name` = "Live Oak High", `City` = "Live Oak")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Apple Valley High", `City` = "Apple Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Granite Hills High", `City` = "Apple Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "High Desert Premier Academy", `City` = "Apple Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Barstow High", `City` = "Barstow")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "BUSD School of Opportunity", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Central High (Continuation)", `City` = "Barstow")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Canyon Ridge High", `City` = "Hesperia")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Hesperia Community Day", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Hesperia High", `City` = "Hesperia")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Mojave High", `City` = "Hesperia")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Oak Hills High", `City` = "Oak Hills")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Shadow Ridge", `City` = "Hesperia")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Sultana High", `City` = "Hesperia")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Black Rock Alternative/Continuation", `City` = "Yucca Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Twentynine Palms High", `City` = "Twentynine Palms")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Yucca Valley High", `City` = "Yucca Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Dr. John H. Milor High Continuation", `City` = "Rialto") # Name Change: MILOR CONTINUATION HIGH
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Eisenhower High", `City` = "Rialto") # Name Change: EISENHOWER SENIOR HIGH
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Rialto High", `City` = "Rialto")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Wilmer Amina Carter High", `City` = "Rialto")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Zupanic Virtual Academy", `City` = "")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Alternative Learning Center", `City` = "")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Anderson", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Arroyo Valley High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Cajon High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Indian Springs High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Middle College High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Pacific High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "San Andreas High", `City` = "Highland")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "San Bernardino City Community Day", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "San Bernardino High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "San Gorgonio High", `City` = "San Bernardino")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Sierra High", `City` = "San Bernardino")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Virtual Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Chaparral High", `City` = "Phelan")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Eagle Summit Community Day", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Serrano High", `City` = "Phelan")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Snowline Academy", `City` = "Phelan")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Hillside High", `City` = "Upland")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Upland High", `City` = "Upland")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Adelanto High", `City` = "Victorville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Cobalt Institute of Math and Science Academy", `City` = "Victorville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Goodwill High", `City` = "Victorville")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Goodwill Independent Study", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Lakeview Leadership Academy", `City` = "Victorville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Silverado High", `City` = "Victorville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "University Preparatory", `City` = "Victorville")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Victor Valley High", `City` = "Victorville")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Victor Valley Virtual Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Green Valley High", `City` = "Yucaipa")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Oak View High School & Education Center", `City` = "Yucaipa")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Bernardino County Consortium", `Name` = "Yucaipa High", `City` = "Yucaipa")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Chaparral High", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "El Cajon Valley High", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "El Capitan High", `City` = "Lakeside")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Elite Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Granite Hills High", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Grossmont High", `City` = "La Mesa")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Grossmont Middle College High", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "IDEA Center", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "MERIT Academy", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Monte Vista High", `City` = "Spring Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Mount Miguel High", `City` = "Spring Valley")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "REACH Academy", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Santana High", `City` = "Santee")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Valhalla High", `City` = "El Cajon")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "West Hills High", `City` = "Santee")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Imperial County Juvenile Hall/Community", `City` = "")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Imperial County Special Education", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Imperial Pathways Charter", `City` = "El Centro")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Valley Academy", `City` = "El Centro")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "El Camino High", `City` = "Oceanside")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Oceanside High", `City` = "Oceanside")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Oceanside Unified School District Adult Transition Program", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Surfside Academy", `City` = "Oceanside")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Surfside High (Continuation)", `City` = "Oceanside")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Monarch", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "North Coastal Consortium Schools", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego County Community", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego County Court", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego County Special Education", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Pasqual Academy", `City` = "Escondido")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "ALBA", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Canyon Hills High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Clairemont High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Crawford High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "East Village Middle College High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Garfield High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Henry High", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Home & Hosp/Transition Support", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Hoover High", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "John Muir Language Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Kearny College Connections", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Kearny Digital Media & Design", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Kearny Eng Innov & Design", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Kearny School of Biomedical Science and Technology", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "La Jolla High", `City` = "La Jolla")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Lincoln High", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Logan Memorial Educational Campus", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Madison High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Mira Mesa High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Mission Bay High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Morse High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Mt. Everest Academy", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Point Loma High", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Riley/New Dawn", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego Metro Career and Tech", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Diego SCPA", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Scripps Ranch High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "TRACE", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Twain High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "University City High", `City` = "San Diego")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Whittier K-12", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Alta Vista Academy", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Bonita Vista Senior High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Castle Park Senior High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Chula Vista Senior High", `City` = "Chula Vista")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "East Hills Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Eastlake High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Hilltop Senior High", `City` = "Chula Vista")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Launch Virtual Academy", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Mar Vista Senior High", `City` = "Imperial Beach")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Montgomery Senior High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Olympian High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Options Secondary", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Otay Ranch Senior High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Palomar High", `City` = "Chula Vista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "San Ysidro High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Southwest Senior High", `City` = "San Diego")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Diego & Imperial Counties Consortium", `Name` = "Sweetwater High", `City` = "National City")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Francisco Consortium", `Name` = "Burton (Phillip and Sala) Aacademic High", `City` = "San Francisco")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Francisco Consortium", `Name` = "Galileo High", `City` = "San Francisco")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Francisco Consortium", `Name` = "Mission High", `City` = "San Francisco")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Francisco Consortium", `Name` = "Marshall (Thurgood) High", `City` = "San Francisco")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Francisco Consortium", `Name` = "Jefferson High", `City` = "Daly City")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Jose Consortium", `Name` = "Andrew P. Hill High", `City` = "San Jose")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Jose Consortium", `Name` = "James Lick High", `City` = "San Jose")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Jose Consortium", `Name` = "William C. Overfelt High", `City` = "San Jose")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "San Jose Consortium", `Name` = "Yerba Buena High", `City` = "San Jose")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "Alta Vista Alternative High School", `City` = "Santa Barbara")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "La Cuesta Continuation High", `City` = "Santa Barbara")
+# soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "Bishop Garcia Diego High School", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "Dos Pueblos Senior High", `City` = "Goleta")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "Santa Barbara Senior High", `City` = "Santa Barbara")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "Carpinteria Senior High", `City` = "Carpinteria")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "Santa Barbara Consortium", `Name` = "San Marcos High", `City` = "San Marcos")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Anzar High", `City` = "San Juan Bautista")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Mt. Madonna High", `City` = "Gilroy")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Christopher High", `City` = "Gilroy")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Gilroy High", `City` = "Gilroy")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Ann Sobrato High", `City` = "Morgan Hill")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Central High School", `City` = "")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Live Oak High School", `City` = "Morgan Hill")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South County Consortium", `Name` = "Hollister High", `City` = "Hollister")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Arvin High", `City` = "Arvin")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Bakersfield High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Centennial High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Del Oro High", `City` = "Loomis")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "East Bakersfield High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Foothill High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Frontier High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Golden Valley High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Highland High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Independence High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Kern Valley High", `City` = "Lake Isabella")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Liberty High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Mira Monte High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "North High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Ridgeview High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Shafter High", `City` = "Shafter")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "South High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Stockdale High", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "West High School", `City` = "Bakersfield")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Frazier Mountain High", `City` = "Lebec")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Maricopa High School", `City` = "Maricopa")
+soapSchools <- soapSchools %>% add_row(`Consortium` = "South San Joaquin Consoritum", `Name` = "Taft Union High", `City` = "Taft")
+
+#### End #### 
+
+#### Merge data ####
+
+calSoap <- calSoap %>% filter(
+  `State`=="CA"
+)
+
+#### End #### 
