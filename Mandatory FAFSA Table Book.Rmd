@@ -1,3 +1,19 @@
+---
+title: "Mandatory FAFSA Table Book"
+author: "Peter Granville"
+date: "December 2024"
+output:
+  html_document:
+    theme: simplex
+    toc: true
+    toc_float: true
+---
+
+```{r setDefault, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r setup, include=FALSE}
 
 #### Setup ####
 
@@ -4106,4 +4122,1317 @@ agg2states <- aggregate(
 )
 
 #### End #### 
+
+```
+
+# Trends in FAFSA completion
+
+## Changes in statewide completion rate
+
+###  {.tabset}
+
+```{r t1.preprocess}
+
+preprocess.t1 <- function(data0, stateName, year0){
+  
+  data0 <- data0 %>% mutate(
+    `State Category` = gsub("Selected State", stateName, `State Category`), 
+    `Year of policy start` = rep(year0), 
+    `Before policy` = comma(`Before policy`), 
+    `After policy` = comma(`After policy`), 
+    `Change` = percent(`Change`, accuracy=0.01), 
+    `Over baseline` = ifelse(
+      `Over baseline` >= 0, 
+      paste("+", round(`Over baseline` * 100, 2), " pp", sep=""), 
+      paste("-", round(`Over baseline` * 100, 2), " pp", sep="")
+    )
+  ) %>% rename(
+    `FAFSA completions, last class before policy` = `Before policy`, 
+    `FAFSA completions, first class under policy` = `After policy`, 
+    `Performance over national baseline` = `Over baseline`
+  )
+  
+  data0$`State Category` = as.factor(data0$`State Category`)
+  data0$`State Category` = factor(data0$`State Category`, levels=rev(levels(data0$`State Category`)))
+  
+  return(data0)
+  
+}
+
+```
+
+#### Louisiana
+
+##### Table A1: Changes in statewide completion rate: Louisiana (2018)
+
+```{r t1.LA}
+kable(preprocess.t1(t1.LA, "Louisiana", "Class of 2018")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Illinois
+
+##### Table A2: Changes in statewide completion rate: Illinois (2021)
+
+```{r t1.IL}
+kable(preprocess.t1(t1.IL, "Illinois", "Class of 2021")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Alabama
+
+##### Table A3: Changes in statewide completion rate: Alabama (2022)
+
+```{r t1.AL}
+kable(preprocess.t1(t1.AL, "Alabama", "Class of 2022")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Colorado
+
+##### Table A4: Changes in statewide completion rate: Colorado (2022)
+
+```{r t1.CO}
+kable(preprocess.t1(t1.CO, "Colorado", "Class of 2022")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Texas
+
+##### Table A5: Changes in statewide completion rate: Texas (2022)
+
+```{r t1.TX}
+kable(preprocess.t1(t1.TX, "Texas", "Class of 2022")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Indiana
+
+##### Table A6: Changes in statewide completion rate: Indiana (2024)
+
+```{r t1.IN}
+kable(preprocess.t1(t1.IN, "Indiana", "Class of 2024")) %>% kable_paper("hover", full_width = F)
+```
+
+#### California
+
+##### Table A7: Changes in statewide completion rate: California (2023)
+
+```{r t1.CA}
+kable(preprocess.t1(t1.CA, "California", "Class of 2023")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Maryland
+
+##### Table A8: Changes in statewide completion rate: Maryland (2023)
+
+```{r t1.MD}
+kable(preprocess.t1(t1.MD, "Maryland", "Class of 2023")) %>% kable_paper("hover", full_width = F)
+```
+
+#### New Hampshire
+
+##### Table A9: Changes in statewide completion rate: New Hampshire (2024)
+
+```{r t1.NH}
+kable(preprocess.t1(t1.NH, "New Hampshire", "Class of 2024")) %>% kable_paper("hover", full_width = F)
+```
+
+#### Data Source and Notes
+
+Words words words
+
+###  {.unnumbered}
+
+Section divide
+
+## FAFSA completion rates by demographics
+
+###  {.tabset}
+
+```{r preprocess.q1}
+
+q1width <- 800
+q1height <- 600
+
+```
+
+```{r preprocess.q2}
+
+q2width <- 800
+q2height <- 600
+
+```
+
+```{r preprocess.q3}
+
+q3width <- 800
+q3height <- 600
+
+```
+
+#### Louisiana
+
+##### Figure B1a: FAFSA completion rates by poverty rate: Louisiana
+
+```{r qLA1}
+ggplotly(qLA1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B1b: FAFSA completion rates by attainment rate: Louisiana
+
+```{r qLA2}
+ggplotly(qLA2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B1c: FAFSA completion rates by race: Louisiana
+
+```{r qLA3}
+ggplotly(qLA3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### Illinois
+
+##### Figure B2a: FAFSA completion rates by poverty rate: Illinois
+
+```{r qIL1}
+ggplotly(qIL1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B2b: FAFSA completion rates by attainment rate: Illinois
+
+```{r qIL2}
+ggplotly(qIL2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B2c: FAFSA completion rates by race: Illinois
+
+```{r qIL3}
+ggplotly(qIL3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### Alabama
+
+##### Figure B3a: FAFSA completion rates by poverty rate: Alabama
+
+```{r qAL1}
+ggplotly(qAL1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B3b: FAFSA completion rates by attainment rate: Alabama
+
+```{r qAL2}
+ggplotly(qAL2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B3c: FAFSA completion rates by race: Alabama
+
+```{r qAL3}
+ggplotly(qAL3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### Texas
+
+##### Figure B4a: FAFSA completion rates by poverty rate: Texas
+
+```{r qTX1}
+ggplotly(qTX1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B4b: FAFSA completion rates by attainment rate: Texas
+
+```{r qTX2}
+ggplotly(qTX2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B4c: FAFSA completion rates by race: Texas
+
+```{r qTX3}
+ggplotly(qTX3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### California
+
+##### Figure B5a: FAFSA completion rates by poverty rate: California
+
+```{r qCA1}
+ggplotly(qCA1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B5b: FAFSA completion rates by attainment rate: California
+
+```{r qCA2}
+ggplotly(qCA2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B5c: FAFSA completion rates by race: California
+
+```{r qCA3}
+ggplotly(qCA3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### Indiana
+
+##### Figure B6a: FAFSA completion rates by poverty rate: Indiana
+
+```{r qIN1}
+ggplotly(qIN1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B6b: FAFSA completion rates by attainment rate: Indiana
+
+```{r qIN2}
+ggplotly(qIN2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B6c: FAFSA completion rates by race: Indiana
+
+```{r qIN3}
+ggplotly(qIN3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### New Hampshire
+
+##### Figure B7a: FAFSA completion rates by poverty rate: New Hampshire
+
+```{r qNH1}
+ggplotly(qNH1, width=q1width, height=q1height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B7b: FAFSA completion rates by attainment rate: New Hampshire
+
+```{r qNH2}
+ggplotly(qNH2, width=q2width, height=q2height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+##### Figure B7c: FAFSA completion rates by race: New Hampshire
+
+```{r qNH3}
+ggplotly(qNH3, width=q3width, height=q3height, tooltip="text") %>% layout(legend = list(orientation = "h"))
+```
+
+#### Data Source and Notes
+
+Words words words
+
+###  {.unnumbered}
+
+Section break
+
+## Changes in FAFSA completion rates
+
+###  {.tabset}
+
+```{r preprocesst2}
+
+preprocess.t2 <- function(data0){
+  
+  data0 <- data0 %>% mutate(
+    `Completions before policy` = comma(`Completions before policy`), 
+    `Completions after policy` = comma(`Completions after policy`)
+  )
+  
+  if(length(names(data0))==8){
+    data0 <- data0 %>% mutate(
+      `Grade 12 students before policy` = comma(`Grade 12 students before policy`), 
+      `Grade 12 students after policy` = comma(`Grade 12 students after policy`), 
+      `Completion rate before policy` = percent(`Completion rate before policy`, accuracy=0.1), 
+      `Completion rate after policy` = percent(`Completion rate after policy`, accuracy=0.1), 
+      `Change in completion rate` = ifelse(
+        `Change in completion rate` >= 0, 
+        paste("+", round(`Change in completion rate` * 100, 2), " pp", sep=""), 
+        paste("-", round(`Change in completion rate` * 100, 2), " pp", sep="")
+      )
+    ) 
+  }else{
+    data0 <- data0 %>% mutate(
+      `Change in completions` = ifelse(
+        `Change in completions` >= 0, 
+        paste("+", percent(`Change in completions`, accuracy=0.1), sep=""), 
+        percent(`Change in completions`, accuracy=0.1)
+      )
+    )
+  }
+  
+  return(data0)
+  
+}
+
+```
+
+#### Louisiana
+
+##### Table C1a: Absolute changes in FAFSA completion rates: Louisiana
+
+```{r t2abs.LA}
+kable(preprocess.t2(t2abs.LA)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C1b: Relative changes in FAFSA completions: Louisiana
+
+```{r t2rel.LA}
+kable(preprocess.t2(t2rel.LA)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Illinois
+
+##### Table C2a: Absolute changes in FAFSA completion rates: Illinois
+
+```{r t2abs.IL}
+kable(preprocess.t2(t2abs.IL)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C2b: Relative changes in FAFSA completions: Illinois
+
+```{r t2rel.IL}
+kable(preprocess.t2(t2rel.IL)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Alabama
+
+##### Table C3a: Absolute changes in FAFSA completion rates: Alabama
+
+```{r t2abs.AL}
+kable(preprocess.t2(t2abs.AL)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C3b: Relative changes in FAFSA completions: Alabama
+
+```{r t2rel.AL}
+kable(preprocess.t2(t2rel.AL)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Texas
+
+##### Table C4a: Absolute changes in FAFSA completion rates: Texas
+
+```{r t2abs.TX}
+kable(preprocess.t2(t2abs.TX)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C4b: Relative changes in FAFSA completions: Texas
+
+```{r t2rel.TX}
+kable(preprocess.t2(t2rel.TX)) %>% kable_paper("hover", full_width = F)
+```
+
+#### California
+
+##### Table C5a: Absolute changes in FAFSA completion rates: California
+
+```{r t2abs.CA}
+kable(preprocess.t2(t2abs.CA)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C5b: Relative changes in FAFSA completions: California
+
+```{r t2rel.CA}
+kable(preprocess.t2(t2rel.CA)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Indiana
+
+##### Table C6a: Absolute changes in FAFSA completion rates: Indiana
+
+```{r t2abs.IN}
+kable(preprocess.t2(t2abs.IN)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C6b: Relative changes in FAFSA completions: Indiana
+
+```{r t2rel.IN}
+kable(preprocess.t2(t2rel.IN)) %>% kable_paper("hover", full_width = F)
+```
+
+#### New Hampshire
+
+##### Table C7a: Absolute changes in FAFSA completion rates: New Hampshire
+
+```{r t2abs.NH}
+kable(preprocess.t2(t2abs.NH)) %>% kable_paper("hover", full_width = F)
+```
+
+##### Table C7b: Relative changes in FAFSA completions: New Hampshire
+
+```{r t2rel.NH}
+kable(preprocess.t2(t2rel.NH)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Data Source and Notes
+
+Words words words
+
+###  {.unnumbered}
+
+Section break
+
+## Changes in Pell Grants Within One Year of Implementation
+
+###  {.tabset}
+
+```{r setLevels}
+
+setLevels <- c(
+  "All",
+  "Public institutions", 
+  "Nonprofit institutions", 
+  "For-profit institutions",
+  "Predominantly certificate-granting", 
+  "Predominantly associate-granting", 
+  "Predominantly bachelor-granting",
+  "HBCUs", 
+  "PBIs", 
+  "ANNHIs",
+  "TCUs",
+  "AANAPIIs",
+  "HSIs",
+  "NANTIs", 
+  "All MSIs",
+  "High-Pell institutions", 
+  "Medium-Pell institutions", 
+  "Low-Pell institutions"
+)
+
+```
+
+```{r selectionTable}
+
+selectionTable <- data.frame(
+  `Variable name` = character(), 
+  `Variable` = character(), 
+  `Selected institutions` = character(), 
+  check.names=FALSE
+)
+
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "None", 
+  `Variable` = "All", 
+  `Selected institutions` = "All"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "CONTROL", 
+  `Variable` = "1", 
+  `Selected institutions` = "Public institutions"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "CONTROL", 
+  `Variable` = "2", 
+  `Selected institutions` = "Nonprofit institutions"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "CONTROL", 
+  `Variable` = "3", 
+  `Selected institutions` = "For-profit institutions"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PREDDEG", 
+  `Variable` = "0", 
+  `Selected institutions` = "Predominant degree: Not classified"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PREDDEG", 
+  `Variable` = "1", 
+  `Selected institutions` = "Predominantly certificate-granting"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PREDDEG", 
+  `Variable` = "2", 
+  `Selected institutions` = "Predominantly associate-granting"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PREDDEG", 
+  `Variable` = "3", 
+  `Selected institutions` = "Predominantly bachelor-granting"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PREDDEG", 
+  `Variable` = "4", 
+  `Selected institutions` = "Entirely graduate-granting"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "HBCU", 
+  `Variable` = "1", 
+  `Selected institutions` = "HBCUs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "PBI", 
+  `Variable` = "1", 
+  `Selected institutions` = "PBIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "ANNHI", 
+  `Variable` = "1", 
+  `Selected institutions` = "ANNHIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "TRIBAL", 
+  `Variable` = "1", 
+  `Selected institutions` = "TCUs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "AANAPII", 
+  `Variable` = "1", 
+  `Selected institutions` = "AANAPIIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "HSI", 
+  `Variable` = "1", 
+  `Selected institutions` = "HSIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "NANTI", 
+  `Variable` = "1", 
+  `Selected institutions` = "NANTIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "MSI", 
+  `Variable` = "1", 
+  `Selected institutions` = "All MSIs"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "UPGRNTP", 
+  `Variable` = "High Pell", 
+  `Selected institutions` = "High-Pell institutions"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "UPGRNTP", 
+  `Variable` = "Medium Pell", 
+  `Selected institutions` = "Medium-Pell institutions"
+)
+selectionTable <- selectionTable %>% add_row(
+  `Variable name` = "UPGRNTP", 
+  `Variable` = "Low Pell", 
+  `Selected institutions` = "Low-Pell institutions"
+)
+
+```
+
+```{r preprocessRecipients}
+
+preprocessRecipients <- function(data0){
+  
+  data0 <- left_join(
+    x=data0, y=selectionTable, by=c("Variable", "Variable name")
+  ) %>% filter(
+    is.na(`Selected institutions`)==FALSE, 
+    is.na(`Selected State`)==FALSE,
+    is.infinite(`Selected State`)==FALSE,
+    `Selected institutions` != "Entirely graduate-granting"
+  )
+  
+  data0 <- data0 %>% select(
+    `Selected state`, 
+    `Comparison window`, 
+    `Selected institutions`, 
+    `Selected State`,
+    `Rest of U.S.`, 
+    `Performance over rest of U.S.`
+  ) %>% rename(
+    `Change in Pell recipients, selected state` = `Selected State`,
+    `Change in Pell recipients, rest of U.S.` = `Rest of U.S.`
+  ) %>% mutate(
+    `Change in Pell recipients, selected state` = percent(`Change in Pell recipients, selected state`, accuracy=0.1),
+    `Change in Pell recipients, rest of U.S.` = percent(`Change in Pell recipients, rest of U.S.`, accuracy=0.1), 
+    `Performance over rest of U.S.` = ifelse(
+      `Performance over rest of U.S.` >= 0, 
+      paste("+", round(`Performance over rest of U.S.` * 100, 1), " pp", sep=""), 
+      paste("-", round(`Performance over rest of U.S.` * 100, 1), " pp", sep="")
+    )
+  )
+  
+  data0$`Selected institutions` <- as.factor(data0$`Selected institutions`)
+  data0$`Selected institutions` <- factor(data0$`Selected institutions`, levels=setLevels)
+  
+  data0 <- data0 %>% arrange(`State`, `Selected institutions`)
+  
+  return(data0)
+  
+}
+
+```
+
+```{r preprocessDisbursements}
+
+preprocessDisbursements <- function(data0){
+  
+  data0 <- left_join(
+    x=data0, y=selectionTable, by=c("Variable", "Variable name")
+  ) %>% filter(
+    is.na(`Selected institutions`)==FALSE, 
+    is.na(`Selected State`)==FALSE,
+    is.infinite(`Selected State`)==FALSE,
+    `Selected institutions` != "Entirely graduate-granting"
+  )
+  
+  data0 <- data0 %>% select(
+    `Selected state`, 
+    `Comparison window`, 
+    `Selected institutions`, 
+    `Selected State`,
+    `Rest of U.S.`, 
+    `Performance over rest of U.S.`
+  ) %>% rename(
+    `Change in Pell disbursements, selected state` = `Selected State`,
+    `Change in Pell disbursements, rest of U.S.` = `Rest of U.S.`
+  ) %>% mutate(
+    `Change in Pell disbursements, selected state` = percent(`Change in Pell disbursements, selected state`, accuracy=0.1),
+    `Change in Pell disbursements, rest of U.S.` = percent(`Change in Pell disbursements, rest of U.S.`, accuracy=0.1), 
+    `Performance over rest of U.S.` = ifelse(
+      `Performance over rest of U.S.` >= 0, 
+      paste("+", round(`Performance over rest of U.S.` * 100, 1), " pp", sep=""), 
+      paste("-", round(`Performance over rest of U.S.` * 100, 1), " pp", sep="")
+    )
+  )
+  
+  data0$`Selected institutions` <- as.factor(data0$`Selected institutions`)
+  data0$`Selected institutions` <- factor(data0$`Selected institutions`, levels=setLevels)
+  
+  data0 <- data0 %>% arrange(`State`, `Selected institutions`)
+
+  return(data0)
+  
+}
+
+```
+
+```{r preprocessTotals}
+
+preprocessTotals <- function(data0){
+  
+  data0 <- data0 %>% select(
+    `Selected state`, 
+    `State Category`, 
+    `Before policy`, 
+    `After policy`, 
+    `Percentage change`
+  ) %>% mutate(
+    `Before policy` = comma(`Before policy`), 
+    `After policy` = comma(`After policy`), 
+    `Percentage change` = percent(`Percentage change`, accuracy=0.1)
+  )
+  
+  return(data0)
+  
+}
+
+```
+
+```{r breakIntoTables.Recipients}
+
+recipients.all <- preprocessRecipients(recipientsPull) %>% filter(`Selected institutions` == "All")
+
+recipients.control <- preprocessRecipients(recipientsPull) %>% filter(`Selected institutions` %in% c(
+  "Public institutions", 
+  "Nonprofit institutions", 
+  "For-profit institutions"
+))
+recipients.preddeg <- preprocessRecipients(recipientsPull) %>% filter(`Selected institutions` %in% c(
+  "Predominantly certificate-granting", 
+  "Predominantly associate-granting", 
+  "Predominantly bachelor-granting"
+))
+recipients.msi <- preprocessRecipients(recipientsPull) %>% filter(`Selected institutions` %in% c(
+  "HBCUs", 
+  "PBIs", 
+  "ANNHIs",
+  "TCUs",
+  "AANAPIIs",
+  "HSIs",
+  "NANTIs", 
+  "All MSIs"
+))
+recipients.pell <- preprocessRecipients(recipientsPull) %>% filter(`Selected institutions` %in% c(
+  "High-Pell institutions", 
+  "Medium-Pell institutions", 
+  "Low-Pell institutions"
+))
+
+```
+
+```{r breakIntoTables.Disbursements}
+
+disbursements.all <- preprocessDisbursements(disbursementsPull) %>% filter(`Selected institutions` == "All")
+
+disbursements.control <- preprocessDisbursements(disbursementsPull) %>% filter(`Selected institutions` %in% c(
+  "Public institutions", 
+  "Nonprofit institutions", 
+  "For-profit institutions"
+))
+disbursements.preddeg <- preprocessDisbursements(disbursementsPull) %>% filter(`Selected institutions` %in% c(
+  "Predominantly certificate-granting", 
+  "Predominantly associate-granting", 
+  "Predominantly bachelor-granting"
+))
+disbursements.msi <- preprocessDisbursements(disbursementsPull) %>% filter(`Selected institutions` %in% c(
+  "HBCUs", 
+  "PBIs", 
+  "ANNHIs",
+  "TCUs",
+  "AANAPIIs",
+  "HSIs",
+  "NANTIs", 
+  "All MSIs"
+))
+disbursements.pell <- preprocessDisbursements(disbursementsPull) %>% filter(`Selected institutions` %in% c(
+  "High-Pell institutions", 
+  "Medium-Pell institutions", 
+  "Low-Pell institutions"
+))
+```
+
+#### All institutions 
+
+##### Table D1: Changes in Pell Grants for all institutions 
+
+```{r pell.all}
+kable(recipients.all) %>% kable_paper("hover", full_width = F)
+kable(disbursements.all) %>% kable_paper("hover", full_width = F)
+```
+
+#### By Pell Share of Enrollment
+
+##### Table D2: Changes in Pell Grants by institution's Pell share of undergraduate enrollment
+
+```{r pell.pell}
+kable(recipients.pell) %>% kable_paper("hover", full_width = F)
+kable(disbursements.pell) %>% kable_paper("hover", full_width = F)
+```
+
+#### By Control
+
+##### Table D3: Changes in Pell Grants by institution's control
+
+```{r pell.control}
+kable(recipients.control) %>% kable_paper("hover", full_width = F)
+kable(disbursements.control) %>% kable_paper("hover", full_width = F)
+```
+
+#### By Predominant Degree
+
+##### Table D4: Changes in Pell Grants by institution's predominant degree awarded
+
+```{r pell.preddeg}
+kable(recipients.preddeg) %>% kable_paper("hover", full_width = F)
+kable(disbursements.preddeg) %>% kable_paper("hover", full_width = F)
+```
+
+#### By MSI Status 
+
+##### Table D5: Changes in Pell Grants by institution's MSI status
+
+```{r pell.msi}
+kable(recipients.msi) %>% kable_paper("hover", full_width = F)
+kable(disbursements.msi) %>% kable_paper("hover", full_width = F)
+```
+
+#### Maximum Window of Comparison
+
+##### Table D6: Changes in Pell Grants for all institutions
+
+```{r pell.bigwindow}
+kable(preprocessRecipients(bigWindowR)) %>% kable_paper("hover", full_width = F)
+kable(preprocessDisbursements(bigWindowD)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Totals
+
+##### Table D7: Total count of Pell Grant recipients and disbursements
+
+```{r pell.total}
+kable(preprocessTotals(totalsPull)) %>% kable_paper("hover", full_width = F)
+```
+
+#### Data Source and Notes
+
+Word words words
+
+###  {.unnumbered}
+
+Section break
+
+## Changes in Undergraduate Enrollment
+
+###  {.tabset}
+
+```{r studentLevels}
+setStudentLevels <- c(
+  "All undergrads", 
+  "Asian", 
+  "Black or African American", 
+  "Hispanic or Latino", 
+  "Native American or Alaska Native", 
+  "Native Hawaiian or Other Pacific Islander", 
+  "White", 
+  "Two or more races", 
+  "First-time undergrads", 
+  "Full-time undergrads", 
+  "First-time full-time undergrads", 
+  "Part-time undergrads", 
+  "First-time part-time undergrads", 
+  "Undergrads at high-Pell institutions", 
+  "Undergrads at medium-Pell institutions", 
+  "Undergrads at low-Pell institutions", 
+  "Undergrads at public institutions", 
+  "Undergrads at nonprofit institutions", 
+  "Undergrads at for-profit institutions", 
+  "Undergrads at certificate-granting institutions", 
+  "Undergrads at associate-granting institutions", 
+  "Undergrads at bachelor-granting institutions"
+)
+```
+
+```{r studentTable}
+studentTable <- data.frame(
+  `Variable` = character(),
+  `Student category` = character(),
+  `Variable of interest` = character(),
+  `Demographic group` = character(), 
+  `Selected students` = character(),
+  check.names=FALSE
+)
+
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "All undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "ASIA",
+  `Selected students` = "Asian"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "BKAA",
+  `Selected students` = "Black or African American"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "HISP",
+  `Selected students` = "Hispanic or Latino"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "AIAN",
+  `Selected students` = "Native American or Alaska Native"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "NHPI",
+  `Selected students` = "Native Hawaiian or Other Pacific Islander"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "WHIT",
+  `Selected students` = "White"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "2MOR",
+  `Selected students` = "Two or more races"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "First-time undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "First-time undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Full-time undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Full-time undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "First-time full-time undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "First-time full-time undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "Part-time undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Part-time undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "All",
+  `Student category` = "First-time part-time undergrads",
+  `Variable of interest` = "None",
+  `Demographic group` = "TOTL",
+  `Selected students` = "First-time part-time undergrads"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "High Pell",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PCTPELL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at high-Pell institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "Medium Pell",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PCTPELL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at medium-Pell institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "Low Pell",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PCTPELL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at low-Pell institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "1",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "CONTROL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at public institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "2",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "CONTROL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at nonprofit institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "3",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "CONTROL",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at for-profit institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "1",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PREDDEG",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at certificate-granting institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "2",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PREDDEG",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at associate-granting institutions"
+)
+studentTable <- studentTable %>% add_row(
+  `Variable` = "3",
+  `Student category` = "Undergrads",
+  `Variable of interest` = "PREDDEG",
+  `Demographic group` = "TOTL",
+  `Selected students` = "Undergrads at bachelor-granting institutions"
+)
+
+```
+
+```{r organizeTables}
+
+enroll.race <- rbind(
+  # TOTL
+  enroll.TOTL.LA,
+  enroll.TOTL.IL,
+  enroll.TOTL.AL,
+  enroll.TOTL.TX,
+  # ASIA
+  enroll.ASIA.LA,
+  enroll.ASIA.IL,
+  enroll.ASIA.AL,
+  enroll.ASIA.TX,
+  # BKAA
+  enroll.BKAA.LA,
+  enroll.BKAA.IL,
+  enroll.BKAA.AL,
+  enroll.BKAA.TX,
+  # HISP
+  enroll.HISP.LA,
+  enroll.HISP.IL,
+  enroll.HISP.AL,
+  enroll.HISP.TX,
+  # AIAN
+  enroll.AIAN.LA,
+  enroll.AIAN.IL,
+  enroll.AIAN.AL,
+  enroll.AIAN.TX,
+  # NHPI
+  enroll.NHPI.LA,
+  enroll.NHPI.IL,
+  enroll.NHPI.AL,
+  enroll.NHPI.TX,
+  # WHIT
+  enroll.WHIT.LA,
+  enroll.WHIT.IL,
+  enroll.WHIT.AL,
+  enroll.WHIT.TX,
+  # 2MOR
+  enroll.2MOR.LA,
+  enroll.2MOR.IL,
+  enroll.2MOR.AL,
+  enroll.2MOR.TX
+)
+
+enroll.ftft <- rbind(
+  # All undergraduate students
+  enroll.UG.IL,
+  enroll.UG.AL,
+  enroll.UG.TX,
+  # First-time undergraduate students
+  enroll.1TUG.IL,
+  enroll.1TUG.AL,
+  enroll.1TUG.TX,
+  # Full-time undergraduate students
+  enroll.FTUG.IL,
+  enroll.FTUG.AL,
+  enroll.FTUG.TX,
+  # Full-time, first-time undergraduate students
+  enroll.FT1TUG.IL,
+  enroll.FT1TUG.AL,
+  enroll.FT1TUG.TX ,
+  # Part-time undergraduate students
+  enroll.PTUG.IL,
+  enroll.PTUG.AL,
+  enroll.PTUG.TX,
+  # Part-time, first-time undergraduate students
+  enroll.PT1GUG.IL,
+  enroll.PT1GUG.AL,
+  enroll.PT1GUG.TX
+)
+
+enroll.pell <- rbind(
+  # Enrollment: All undergraduates by Pell share
+  enroll.PCTPELL.LA,
+  enroll.PCTPELL.IL,
+  enroll.PCTPELL.AL,
+  enroll.PCTPELL.TX
+)
+
+enroll.control <- rbind(
+  # Enrollment: All undergraduates by institutional control
+  enroll.CONTROL.LA,
+  enroll.CONTROL.IL,
+  enroll.CONTROL.AL,
+  enroll.CONTROL.TX
+)
+
+enroll.preddeg <- rbind(
+  # Enrollment: All undergraduates by predominant degree awarded
+  enroll.PREDDEG.LA,
+  enroll.PREDDEG.IL,
+  enroll.PREDDEG.AL,
+  enroll.PREDDEG.TX
+)
+
+```
+
+```{r preprocessEnroll}
+
+preprocessEnroll <- function(data0){
+  
+  data0 <- left_join(
+    x=data0, y=studentTable, by=c("Variable", "Student category", "Variable of interest", "Demographic group")
+  ) %>% filter(
+    is.na(`Selected students`)==FALSE
+  )
+  
+  data0 <- data0 %>% select(
+    `Selected state`, 
+    `Comparison years`, 
+    `Selected students`, 
+    `Enrollment change, selected state`, 
+    `Enrollment change, rest of U.S.`, 
+    `Percentage point difference`
+  )
+  
+  data0$`Selected students` <- as.factor(data0$`Selected students`)
+  data0$`Selected students` <- factor(data0$`Selected students`, levels=setStudentLevels)
+  
+  data0 <- data0 %>% arrange(`State`, `Selected students`)
+  
+  return(data0)
+  
+}
+
+```
+
+#### First-time, full-time
+
+##### Table E1: Changes in undergraduate enrollment by first-time status and enrollment intensity
+
+```{r enroll.ftft}
+kable(enroll.ftft) %>% kable_paper("hover", full_width = F)
+```
+
+#### Pell share 
+
+##### Table E2: Changes in undergraduate enrollment by institution's Pell share of undergraduate enrollment 
+
+```{r enroll.pell}
+kable(enroll.pell) %>% kable_paper("hover", full_width = F)
+```
+
+#### Control
+
+##### Table E3: Changes in undergraduate enrollment by institution's control
+
+```{r enroll.control}
+kable(enroll.control) %>% kable_paper("hover", full_width = F)
+```
+
+#### Predominant degree 
+
+##### Table E4: Changes in undergraduate enrollment by institution's predominant degree awarded
+
+```{r enroll.preddeg}
+kable(enroll.preddeg) %>% kable_paper("hover", full_width = F)
+```
+
+#### Race/ethnicity 
+
+##### Table E5: Changes in undergraduate enrollment by race/ethnicity
+
+```{r enroll.race}
+kable(enroll.race) %>% kable_paper("hover", full_width = F)
+```
+
+#### Data Source and Notes 
+
+Words words words
+
+###  {.unnumbered}
+
+Section break
+
+## Additional analyses
+
+###  {.tabset}
+
+#### Active Policies
+
+##### Table F1: Number of students in a state with an active policy 
+
+```{r preprocessActiveStudents}
+activeStudents <- activeStudents %>% rename(
+  `Grade 12 students` = `Grade 12 Students [State] 2023-24`
+) %>% mutate(
+  `Grade 12 students` = comma(`Grade 12 students`), 
+  `Share of total` = percent(`Share of total`, accuracy=0.1)
+)
+```
+
+```{r activeStudents}
+kable(activeStudents) %>% kable_paper("hover", full_width = F)
+```
+
+#### Cal-SOAP
+
+##### Table F2: FAFSA Completion in California by High Schools' Cal-SOAP Consortium Member Status
+
+```{r preprocessCalSoap}
+comp1 <- comp1 %>% mutate(
+  `CalSOAP` = ifelse(
+    `CalSOAP` == "CalSOAP participant", "Yes", "No"
+  )
+) %>% pivot_wider(
+  id_cols=c(`CalSOAP`), 
+  names_from=`Year`, 
+  values_from=`FAFSA completion rate`
+) %>% mutate(
+  `Percentage point change` = `Class of 2023` - `Class of 2022`
+) %>% mutate(
+  `Percentage point change` = ifelse(
+    `Percentage point change` >= 0, 
+    paste("+", round(`Percentage point change` * 100, 2), " pp", sep=""), 
+    paste("-", round(`Percentage point change` * 100, 2), " pp", sep="")
+  )
+) %>% mutate(
+  `FAFSA completion rate` = percent(`FAFSA completion rate`, accuracy=0.1)
+) %>% rename(
+  `FAFSA completion rate, class of 2022` = `Class of 2022`, 
+  `FAFSA completion rate, class of 2023` = `Class of 2023`, 
+  `High School is a Cal-SOAP Consortium Member` = `CalSOAP`
+)
+
+```
+
+```{r calSoap}
+kable(comp1) %>% kable_paper("hover", full_width = F)
+```
+
+#### Mixed-Status Families
+
+##### Table F3: Estimated U.S. Citizens Living with a Noncitizen, Nationwide and in Mandatory FAFSA States
+
+```{r preprocessMixedStatus}
+
+preprocessMixedStatus <- function(data0){
+  
+  data0 <- data0 %>% filter(
+  `Mixed household` == "Mixed"
+) %>% select(
+  -(`Mixed household`)
+) %>% mutate(
+  `PWGTP` = comma(`PWGTP`)
+)
+  data0$`State`[data0$`State`=="Overall"] <- "U.S. overall"
+  
+  data0 <- data0 %>% arrange(`State`)
+  
+  return(data0)
+}
+
+agg0 <- rbind(
+  preprocessMixedStatus(agg0overall), 
+  preprocessMixedStatus(agg0states)
+) %>% rename(
+  `Overall` = `PWGTP`
+)
+
+agg1 <- rbind(
+  preprocessMixedStatus(agg1overall), 
+  preprocessMixedStatus(agg1states)
+) %>% rename(
+  `Enrolled in Grade 12` = `PWGTP`
+)
+
+agg2 <- rbind(
+  preprocessMixedStatus(agg2overall), 
+  preprocessMixedStatus(agg2states)
+) %>% rename(
+  `Aged 17 to 23` = `PWGTP`
+)
+
+mixedStatus <- full_join(x=agg0, y=full_join(
+  x=agg1, y=agg2, by="State"
+), by="State")
+
+```
+
+```{r mixedStatus}
+kable(mixedStatus) %>% kable_paper("hover", full_width = F)
+```
+
+#### Data Source and Notes 
+
+Words words words
+
+###  {.unnumbered}
+
+Section break
 
