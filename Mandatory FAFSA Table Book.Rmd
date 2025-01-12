@@ -1,7 +1,7 @@
 ---
 title: "Mandatory FAFSA Table Book"
 author: "Peter Granville"
-date: "December 2024"
+date: "January 2025"
 output:
   html_document:
     theme: simplex
@@ -1451,6 +1451,9 @@ quintilePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYe
     ) %>% rename(
       `InterestVar` = tilesVar
     ) 
+    if(tilesVar=="Groups: No college share"){
+      newVar <- "Groups: Share of adults without a college degree"
+    }
     analysis1 <- aggregate(data=newTiles, cbind(
       `Completions`, 
       `Grade 12 students`
@@ -1483,6 +1486,9 @@ quintilePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYe
     ) %>% rename(
       `InterestVar` = tilesVar
     ) 
+    if(tilesVar=="Groups: No college share"){
+      newVar <- "Groups: Share of adults without a college degree"
+    }
     analysis1 <- aggregate(data=newTiles, cbind(
       `Completions`, 
       `Grade 12 students`
@@ -1523,6 +1529,9 @@ onefivePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYea
     ) %>% rename(
       `InterestVar` = tilesVar
     ) 
+    if(tilesVar=="Groups: No college share"){
+      newVar <- "Groups: Share of adults without a college degree"
+    }
     analysis1 <- aggregate(data=newTiles, cbind(
       `Completions`, 
       `Grade 12 students`
@@ -1549,6 +1558,9 @@ onefivePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYea
     ) %>% rename(
       `InterestVar` = tilesVar
     ) 
+    if(tilesVar=="Groups: No college share"){
+      newVar <- "Groups: Share of adults without a college degree"
+    }
     analysis1 <- aggregate(data=newTiles, cbind(
       `Completions`, 
       `Grade 12 students`
@@ -2684,6 +2696,7 @@ scorecard <- read.csv(
   `MAIN`,
   `CONTROL`,
   `PREDDEG`,
+  `PCTPELL`,
   `HBCU`,
   `PBI`,
   `ANNHI`,
@@ -2702,24 +2715,16 @@ scorecard <- read.csv(
     (`HBCU`==1) | (`PBI`==1) | (`ANNHI`==1) | (`TRIBAL`==1) | (`AANAPII`==1) | (`HSI`==1) | (`NANTI`==1), 
     1, 0
   )
+) %>% mutate(
+  `PCTPELL` = ifelse(
+    between(`PCTPELL`, 0, 0.3), "Low Pell", ifelse(
+      between(`PCTPELL`, 0.3, 0.6), "Medium Pell", ifelse(
+        between(`PCTPELL`, 0.6, 1), "High Pell", NA
+      )
+    )
+  )
 ) %>% filter(
   `OPEID` > 0
-) %>% mutate(
-  `OPEID` = as.character(`OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==1, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==2, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==3, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==4, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==5, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==6, paste("0", `OPEID`, sep=""), `OPEID`)
-) %>% mutate(
-  `OPEID` = ifelse(nchar(`OPEID`)==7, paste("0", `OPEID`, sep=""), `OPEID`)
 ) 
 
 #### End #### 
@@ -2737,114 +2742,15 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
     `2017-18`, `2018-19`, `2019-20`, `2020-21`, `2021-22`, `2022-23`, `2023-24`
   ) ~ `OPEID` + `Name` + `State`, FUN=sum)
   
-  if(year2=="2017-18"){yearHD <- "2018"}
-  if(year2=="2018-19"){yearHD <- "2019"}
-  if(year2=="2019-20"){yearHD <- "2020"}
-  if(year2=="2020-21"){yearHD <- "2021"}
-  if(year2=="2021-22"){yearHD <- "2022"}
-  if(year2=="2022-23"){yearHD <- "2023"}
-  if(year2=="2023-24"){yearHD <- "2023"}
-  
-  if(year1=="2017-18"){yearSFA <- "1718"}
-  if(year1=="2018-19"){yearSFA <- "1819"}
-  if(year1=="2019-20"){yearSFA <- "1920"}
-  if(year1=="2020-21"){yearSFA <- "2021"}
-  if(year1=="2021-22"){yearSFA <- "2122"}
-  if(year1=="2022-23"){yearSFA <- "2122"}
-  if(year1=="2023-24"){yearSFA <- "2122"}
-  
-  filenameHD <- paste("hd", yearHD, ".csv", sep="")
-  filenameEFFY <- paste("effy", yearHD, ".csv", sep="")
-  filenameSFA <- paste("sfa", yearSFA, ".csv", sep="")
-  
-  hd <- read.csv(filenameHD, header=TRUE) %>% select(
-    `UNITID`,
-    `OPEID`, 
-    `SECTOR`
-  ) %>% filter(
-    `OPEID` > 0
-  ) %>% mutate(
-    `OPEID` = as.character(`OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==1, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==2, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==3, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==4, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==5, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==6, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) %>% mutate(
-    `OPEID` = ifelse(nchar(`OPEID`)==7, paste("0", `OPEID`, sep=""), `OPEID`)
-  ) 
-  
-  sfa <- read.csv(filenameSFA, header=TRUE) %>% select(
-    `UNITID`,
-    `UPGRNTP`
-  ) %>% mutate(
-    `UPGRNTP` = ifelse(
-      between(`UPGRNTP`, 0, 30), "Low Pell", ifelse(
-        between(`UPGRNTP`, 30, 60), "Medium Pell", ifelse(
-          between(`UPGRNTP`, 60, 100), "High Pell", NA
-        )
-      )
-    )
-  )
-  
-  hd <- left_join(x=hd, y=sfa, by="UNITID")
-  hd <- left_join(x=hd, y=scorecard, by="OPEID")
-  
-  if(filenameEFFY %in% c(
-    "effy2023.csv", 
-    "effy2022.csv", 
-    "effy2021.csv", 
-    "effy2020.csv"
-  )){
-    effy <- read.csv(filenameEFFY, header=TRUE) %>% select(
-      `UNITID`, 
-      `EFFYALEV`,
-      `EFYTOTLT`
-    ) %>% filter(
-      `EFFYALEV`==1
-    ) %>% select(
-      -(`EFFYALEV`)
-    )
-  }else{
-    effy <- read.csv(filenameEFFY, header=TRUE) %>% select(
-      `UNITID`, 
-      `EFFYLEV`,
-      `EFYTOTLT`
-    ) %>% filter(
-      `EFFYLEV`==1
-    ) %>% select(
-      -(`EFFYLEV`)
-    )
-  }
-  hd <- left_join(x=hd, y=effy, by="UNITID")
-  hd <- hd %>% arrange(
-    `OPEID`, 
-    desc(`EFYTOTLT`)
-  ) %>% filter(
-    duplicated(`OPEID`)==FALSE
-  ) %>% select(
-    -(`EFYTOTLT`), 
-    -(`UNITID`)
-  )
-  
-  data1 <- right_join(x=hd, data1, by="OPEID")
-  
   data1 <- data1 %>% mutate(
     `State Category` = ifelse(
       `State`==state0, "Selected State", "Rest of U.S."
     )
   ) %>% select(
     `OPEID`, 
-    `SECTOR`,
     `CONTROL`,
     `PREDDEG`,
+    `PCTPELL`,
     `HBCU`,
     `PBI`,
     `ANNHI`,
@@ -2853,7 +2759,6 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
     `HSI`,
     `NANTI`,
     `MSI`,
-    `UPGRNTP`,
     `Name`, 
     `State`, 
     `State Category`,
@@ -2863,9 +2768,9 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
   names(data1)[17] <- "Before policy"
   names(data1)[18] <- "After policy"
   
-  if(interestVar == "SECTOR"){data1 <- data1 %>% mutate(`Variable` = `SECTOR`)}
   if(interestVar == "CONTROL"){data1 <- data1 %>% mutate(`Variable` = `CONTROL`)}
   if(interestVar == "PREDDEG"){data1 <- data1 %>% mutate(`Variable` = `PREDDEG`)}
+  if(interestVar == "PCTPELL"){data1 <- data1 %>% mutate(`Variable` = `PCTPELL`)}
   if(interestVar == "HBCU"){data1 <- data1 %>% mutate(`Variable` = `HBCU`)}
   if(interestVar == "PBI"){data1 <- data1 %>% mutate(`Variable` = `PBI`)}
   if(interestVar == "ANNHI"){data1 <- data1 %>% mutate(`Variable` = `ANNHI`)}
@@ -2874,7 +2779,6 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
   if(interestVar == "HSI"){data1 <- data1 %>% mutate(`Variable` = `HSI`)}
   if(interestVar == "NANTI"){data1 <- data1 %>% mutate(`Variable` = `NANTI`)}
   if(interestVar == "MSI"){data1 <- data1 %>% mutate(`Variable` = `MSI`)}
-  if(interestVar == "UPGRNTP"){data1 <- data1 %>% mutate(`Variable` = `UPGRNTP`)}
   if(interestVar == "None"){data1 <- data1 %>% mutate(`Variable` = rep("All"))}
   
   data1 <- aggregate(data=data1, cbind(
@@ -2902,7 +2806,7 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
     
     return(data1)
   }
-  rm(data1, yearHD, hd, effy, sfa)
+  rm(data1)
   
 }
 
@@ -2938,6 +2842,13 @@ recipientsPull <- rbind(
   processPell(pell.recipients, "AL", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.recipients, "TX", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.recipients, "CA", "2022-23", "2023-24", "PREDDEG", printTotals=FALSE), 
+  
+  # PCTPELL 
+  processPell(pell.recipients, "LA", "2017-18", "2018-19", "PCTPELL", printTotals=FALSE),
+  processPell(pell.recipients, "IL", "2020-21", "2021-22", "PCTPELL", printTotals=FALSE),
+  processPell(pell.recipients, "AL", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
+  processPell(pell.recipients, "TX", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "PCTPELL", printTotals=FALSE),
   
   # HBCU 0	No
   # HBCU 1	Yes
@@ -3001,13 +2912,7 @@ recipientsPull <- rbind(
   processPell(pell.recipients, "IL", "2020-21", "2021-22", "MSI", printTotals=FALSE),
   processPell(pell.recipients, "AL", "2021-22", "2022-23", "MSI", printTotals=FALSE),
   processPell(pell.recipients, "TX", "2021-22", "2022-23", "MSI", printTotals=FALSE),
-  processPell(pell.recipients, "CA", "2022-23", "2023-24", "MSI", printTotals=FALSE), 
-  
-  processPell(pell.recipients, "LA", "2017-18", "2018-19", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.recipients, "IL", "2020-21", "2021-22", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.recipients, "AL", "2021-22", "2022-23", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.recipients, "TX", "2021-22", "2022-23", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.recipients, "CA", "2022-23", "2023-24", "UPGRNTP", printTotals=FALSE)
+  processPell(pell.recipients, "CA", "2022-23", "2023-24", "MSI", printTotals=FALSE) 
   
 )
 
@@ -3029,21 +2934,6 @@ disbursementsPull <- rbind(
   processPell(pell.disbursements, "TX", "2021-22", "2022-23", "CONTROL", printTotals=FALSE),
   processPell(pell.disbursements, "CA", "2022-23", "2023-24", "CONTROL", printTotals=FALSE),
   
-  # SECTOR	1	Public, 4-year or above
-  # SECTOR	2	Private not-for-profit, 4-year or above
-  # SECTOR	3	Private for-profit, 4-year or above
-  # SECTOR	4	Public, 2-year
-  # SECTOR	5	Private not-for-profit, 2-year
-  # SECTOR	6	Private for-profit, 2-year
-  # SECTOR	7	Public, less-than 2-year
-  # SECTOR	8	Private not-for-profit, less-than 2-year
-  # SECTOR	9	Private for-profit, less-than 2-year
-  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "SECTOR", printTotals=FALSE),
-  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "SECTOR", printTotals=FALSE),
-  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "SECTOR", printTotals=FALSE),
-  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "SECTOR", printTotals=FALSE),
-  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "SECTOR", printTotals=FALSE), 
-  
   #   PREDDEG 0	Not classified
   #   PREDDEG 1	Predominantly certificate-degree granting
   #   PREDDEG 2	Predominantly associate's-degree granting
@@ -3053,7 +2943,14 @@ disbursementsPull <- rbind(
   processPell(pell.disbursements, "IL", "2020-21", "2021-22", "PREDDEG", printTotals=FALSE),
   processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
-  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PREDDEG", printTotals=FALSE), 
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PREDDEG", printTotals=FALSE),
+  
+  # PCTPELL
+  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "PCTPELL", printTotals=FALSE),
+  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "PCTPELL", printTotals=FALSE),
+  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
+  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PCTPELL", printTotals=FALSE), 
   
   # HBCU 0	No
   # HBCU 1	Yes
@@ -3117,13 +3014,7 @@ disbursementsPull <- rbind(
   processPell(pell.disbursements, "IL", "2020-21", "2021-22", "MSI", printTotals=FALSE),
   processPell(pell.disbursements, "AL", "2021-22", "2022-23", "MSI", printTotals=FALSE),
   processPell(pell.disbursements, "TX", "2021-22", "2022-23", "MSI", printTotals=FALSE),
-  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "MSI", printTotals=FALSE), 
-  
-  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "UPGRNTP", printTotals=FALSE),
-  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "UPGRNTP", printTotals=FALSE)
+  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "MSI", printTotals=FALSE)
   
 )
 
@@ -3156,15 +3047,6 @@ bigWindowD <- rbind(
   processPell(pell.disbursements, "AL", "2021-22", "2023-24", "None", printTotals=FALSE),
   processPell(pell.disbursements, "TX", "2021-22", "2023-24", "None", printTotals=FALSE)
 )
-
-#### End #### 
-
-#### Write .csv files ####
-
-setwd("/Users/peter_granville/FAFSA-2024/Pell data")
-
-write.csv(recipientsPull, "Pell recipients.csv", row.names=FALSE)
-write.csv(disbursementsPull, "Pell disbursements.csv", row.names=FALSE)
 
 #### End #### 
 
@@ -3279,19 +3161,19 @@ processEnrollment <- function(data0, state0, year1, year2, students, demographic
     )
   ) 
   
-  if(students == "Undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 2)}
-  if(students == "First-time undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 4)}
-  if(students == "Full-time undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 22)}
-  if(students == "Full-time first-time undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 24)}
-  if(students == "Part-time undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 42)}
-  if(students == "Part-time first-time undergrads"){data1 <- data1 %>% filter(`EFALEVEL` == 44)}
+  if(students == "Undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 2)}
+  if(students == "First-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 4)}
+  if(students == "Full-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 22)}
+  if(students == "Full-time first-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 24)}
+  if(students == "Part-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 42)}
+  if(students == "Part-time first-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 44)}
   if(students %in% c(
-    "Undergrads", 
-    "First-time undergrads", 
-    "Full-time undergrads", 
-    "Full-time first-time undergrads",
-    "Part-time undergrads",
-    "Part-time first-time undergrads"
+    "Undergraduates", 
+    "First-time undergraduates", 
+    "Full-time undergraduates", 
+    "Full-time first-time undergraduates",
+    "Part-time undergraduates",
+    "Part-time first-time undergraduates"
   )==FALSE){data1 <- data1 %>% filter(`EFALEVEL` == 9999999)}
   
   if(demographic == "TOTL"){data1 <- data1 %>% mutate(`Total students` = `EFTOTLT`)}
@@ -3373,139 +3255,139 @@ processEnrollment <- function(data0, state0, year1, year2, students, demographic
 #### Run function: All undergraduates by race/ethnicity ####
 
 # All undergraduates by race/ethnicity: TOTL
-enroll.TOTL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: ASIA
-enroll.ASIA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: BKAA
-enroll.BKAA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: HISP
-enroll.HISP.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: AIAN
-enroll.AIAN.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: NHPI
-enroll.NHPI.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: WHIT
-enroll.WHIT.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
 
 # All undergraduates by race/ethnicity: 2MOR
-enroll.2MOR.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Full-time & first-time status ####
 
 # All undergraduate students: TOTL
-enroll.UG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.UG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.UG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.UG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.UG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.UG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # First-time undergraduate students: TOTL
-enroll.1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # Full-time undergraduate students: TOTL
-enroll.FTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # Full-time, first-time undergraduate students: TOTL
-enroll.FT1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FT1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FT1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FT1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FT1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FT1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FT1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FT1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FT1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.FT1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # Part-time undergraduate students: TOTL
-enroll.PTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # Part-time, first-time undergraduate students: TOTL
-enroll.PT1GUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PT1GUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PT1GUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PT1GUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PT1GUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time first-time undergrads", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PT1GUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PT1GUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PT1GUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PT1GUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.PT1GUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Pell share of undergraduates ####
 
 # All undergraduates by Pell share: TOTL
-enroll.PCTPELL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Institutional control ####
 
 # All undergraduates by institutional control: TOTL
-enroll.CONTROL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Predominant degree awarded ####
 
 # All undergraduates by predominant degree awarded: TOTL
-enroll.PREDDEG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergrads", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergrads", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergrads", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergrads", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
 
 #### End #### 
 
@@ -3931,201 +3813,45 @@ comp1 <- aggregate(data=comp1, cbind(
 #### Mixed-status families          ####
 ########################################
 
-#### Create state lookup ####
+#### Load and process data ####
 
-stateLookup <- data.frame(
-  `ST` = numeric(), 
-  `State` = character()
+# See "ACS PUMS Mixed Status FAFSA Families.R" 
+
+setwd("/Users/peter_granville/FAFSA-2024")
+
+agg1723 <- read.csv(
+  "ACS-MS agg1723.csv", header=TRUE
+) %>% rename(
+  `Young adults aged 17 to 23` = `PWGTP`
+)
+aggG12 <- read.csv(
+  "ACS-MS aggG12.csv", header=TRUE
+) %>% rename(
+  `Grade 12 students` = `PWGTP`
 )
 
-stateLookup <- stateLookup %>% add_row(`ST`=1, `State` = "AL")
-stateLookup <- stateLookup %>% add_row(`ST`=2, `State` = "AK")
-stateLookup <- stateLookup %>% add_row(`ST`=4, `State` = "AZ")
-stateLookup <- stateLookup %>% add_row(`ST`=5, `State` = "AR")
-stateLookup <- stateLookup %>% add_row(`ST`=6, `State` = "CA")
-stateLookup <- stateLookup %>% add_row(`ST`=8, `State` = "CO")
-stateLookup <- stateLookup %>% add_row(`ST`=9, `State` = "CT")
-stateLookup <- stateLookup %>% add_row(`ST`=10, `State` = "DE")
-stateLookup <- stateLookup %>% add_row(`ST`=11, `State` = "DC")
-stateLookup <- stateLookup %>% add_row(`ST`=12, `State` = "FL")
-stateLookup <- stateLookup %>% add_row(`ST`=13, `State` = "GA")
-stateLookup <- stateLookup %>% add_row(`ST`=15, `State` = "HI")
-stateLookup <- stateLookup %>% add_row(`ST`=16, `State` = "ID")
-stateLookup <- stateLookup %>% add_row(`ST`=17, `State` = "IL")
-stateLookup <- stateLookup %>% add_row(`ST`=18, `State` = "IN")
-stateLookup <- stateLookup %>% add_row(`ST`=19, `State` = "IA")
-stateLookup <- stateLookup %>% add_row(`ST`=20, `State` = "KS")
-stateLookup <- stateLookup %>% add_row(`ST`=21, `State` = "KY")
-stateLookup <- stateLookup %>% add_row(`ST`=22, `State` = "LA")
-stateLookup <- stateLookup %>% add_row(`ST`=23, `State` = "ME")
-stateLookup <- stateLookup %>% add_row(`ST`=24, `State` = "MD")
-stateLookup <- stateLookup %>% add_row(`ST`=25, `State` = "MA")
-stateLookup <- stateLookup %>% add_row(`ST`=26, `State` = "MI")
-stateLookup <- stateLookup %>% add_row(`ST`=27, `State` = "MN")
-stateLookup <- stateLookup %>% add_row(`ST`=28, `State` = "MS")
-stateLookup <- stateLookup %>% add_row(`ST`=29, `State` = "MO")
-stateLookup <- stateLookup %>% add_row(`ST`=30, `State` = "MT")
-stateLookup <- stateLookup %>% add_row(`ST`=31, `State` = "NE")
-stateLookup <- stateLookup %>% add_row(`ST`=32, `State` = "NV")
-stateLookup <- stateLookup %>% add_row(`ST`=33, `State` = "NH")
-stateLookup <- stateLookup %>% add_row(`ST`=34, `State` = "NJ")
-stateLookup <- stateLookup %>% add_row(`ST`=35, `State` = "NM")
-stateLookup <- stateLookup %>% add_row(`ST`=36, `State` = "NY")
-stateLookup <- stateLookup %>% add_row(`ST`=37, `State` = "NC")
-stateLookup <- stateLookup %>% add_row(`ST`=38, `State` = "ND")
-stateLookup <- stateLookup %>% add_row(`ST`=39, `State` = "OH")
-stateLookup <- stateLookup %>% add_row(`ST`=40, `State` = "OK")
-stateLookup <- stateLookup %>% add_row(`ST`=41, `State` = "OR")
-stateLookup <- stateLookup %>% add_row(`ST`=42, `State` = "PA")
-stateLookup <- stateLookup %>% add_row(`ST`=44, `State` = "RI")
-stateLookup <- stateLookup %>% add_row(`ST`=45, `State` = "SC")
-stateLookup <- stateLookup %>% add_row(`ST`=46, `State` = "SD")
-stateLookup <- stateLookup %>% add_row(`ST`=47, `State` = "TN")
-stateLookup <- stateLookup %>% add_row(`ST`=48, `State` = "TX")
-stateLookup <- stateLookup %>% add_row(`ST`=49, `State` = "UT")
-stateLookup <- stateLookup %>% add_row(`ST`=50, `State` = "VT")
-stateLookup <- stateLookup %>% add_row(`ST`=51, `State` = "VA")
-stateLookup <- stateLookup %>% add_row(`ST`=53, `State` = "WA")
-stateLookup <- stateLookup %>% add_row(`ST`=54, `State` = "WV")
-stateLookup <- stateLookup %>% add_row(`ST`=55, `State` = "WI")
-stateLookup <- stateLookup %>% add_row(`ST`=56, `State` = "WY")
-stateLookup <- stateLookup %>% add_row(`ST`=72, `State` = "PR")
-
-#### End #### 
-
-#### Load ACS data ####
-
-setwd("/Users/peter_granville/Various-TCF-Projects")
-
-loadPUMS <- function(filename){
-  
-  tempDF <- read.csv(filename, header=TRUE) 
-  
-  tempDF <- tempDF %>% rename(
-    `ST` = `STATE`
-  ) %>% select(
-    `PWGTP`, 
-    `SERIALNO`,
-    `ST`, 
-    `CIT`, 
-    `AGEP`, 
-    `RELSHIPP`, 
-    `SCHG`
-  )
-  
-  return(tempDF)
-  
-}
-
-pums <- rbind(
-  loadPUMS("psam2023_pusa.csv"), 
-  loadPUMS("psam2023_pusb.csv")
-)
-
-pums <- pums %>% filter(
-  grepl("GQ", `SERIALNO`)==FALSE
-)
-
-pums <- left_join(x=pums, y=stateLookup, by="ST")
-
-#### End #### 
-
-#### Format ACS data ####
-
-pums <- pums %>% mutate(
-  `Count` = rep(1), 
-  `CIT2` = ifelse(`CIT` < 5, "Citizen", "Not a citizen")
-)
-mixedStatus <- aggregate(
-  data=pums, `Count` ~ `SERIALNO` + `CIT2`, FUN=sum
-) %>% pivot_wider(
-  id_cols=c(`SERIALNO`),
-  names_from=`CIT2`, 
-  values_from=`Count`
-)
-mixedStatus[is.na(mixedStatus)] <- 0
-
-mixedStatus <- mixedStatus %>% filter(
-  `Citizen` > 0, 
-  `Not a citizen` > 0
-)
-
-citizenAll <- pums %>% filter(
-  `CIT` %in% (1:4)
+aggMS <- full_join(
+  x=agg1723, y=aggG12, by="State"
 ) %>% mutate(
-  `Mixed household` = ifelse(
-    `SERIALNO` %in% mixedStatus$`SERIALNO`, "Mixed", "Not mixed"
+  `Grade 12 students` = ifelse(
+    is.na(`Grade 12 students`), 0, `Grade 12 students`
   )
 )
-citizenG12 <- pums %>% filter(
-  `SCHG` == 14, # Grade 12
-  `CIT` %in% (1:4)
-) %>% mutate(
-  `Mixed household` = ifelse(
-    `SERIALNO` %in% mixedStatus$`SERIALNO`, "Mixed", "Not mixed"
-  )
-)
-citizen1723 <- pums %>% filter(
-  `AGEP` %in% c(17, 18, 19, 20, 21, 22, 23), 
-  `CIT` %in% (1:4)
-) %>% mutate(
-  `Mixed household` = ifelse(
-    `SERIALNO` %in% mixedStatus$`SERIALNO`, "Mixed", "Not mixed"
-  )
-)
-
-#### End #### 
-
-#### Calculate by state and overall: All ####
-
-agg0overall <- aggregate(
-  data=citizenAll, `PWGTP` ~ `Mixed household`, FUN=sum
-) %>% mutate(
-  `State` = rep("Overall")
-)
-agg0states <- aggregate(
-  data=citizenAll, `PWGTP` ~ `Mixed household` + `State`, FUN=sum
-) %>% filter(
-  `State` %in% c("AL", "CA", "IL", "IN", "NE", "NJ", "NY", "OK", "TX")
-)
-
-#### End #### 
-
-#### Calculate by state and overall: Grade 12 ####
-
-agg1overall <- aggregate(
-  data=citizenG12, `PWGTP` ~ `Mixed household`, FUN=sum
-) %>% mutate(
-  `State` = rep("Overall")
-)
-agg1states <- aggregate(
-  data=citizenG12, `PWGTP` ~ `Mixed household` + `State`, FUN=sum
-) %>% filter(
-  `State` %in% c("AL", "CA", "IL", "IN", "NE", "NJ", "NY", "OK", "TX")
-)
-
-#### End #### 
-
-#### Calculate by state and overall: Aged 17-23 ####
-
-agg2overall <- aggregate(
-  data=citizen1723, `PWGTP` ~ `Mixed household`, FUN=sum
-) %>% mutate(
-  `State` = rep("Overall")
-)
-agg2states <- aggregate(
-  data=citizen1723, `PWGTP` ~ `Mixed household` + `State`, FUN=sum
-) %>% filter(
-  `State` %in% c("AL", "CA", "IL", "IN", "NE", "NJ", "NY", "OK", "TX")
-)
+rm(agg1723, aggG12)
 
 #### End #### 
 
 ```
 
+This appendix contains the tables used in our full report. Each set of tables contains a "Data Source and Notes" tab containing methodological details. 
+
 # Trends in FAFSA completion
 
+The following tables examine how FAFSA completion rates have changed in states after introducing a mandatory FAFSA policy, with breakdowns by schools' community demographics and starting completion rates. 
+
 ## Changes in statewide completion rate
+
+The set of tables below examines how the annual total FAFSA completions changed under new statewide policies. Please refer to the full report for context on which states we included.  
 
 ###  {.tabset}
 
@@ -4236,13 +3962,15 @@ kable(preprocess.t1(t1.NH, "New Hampshire", "Class of 2023", "Class of 2024")) %
 
 #### Data Source and Notes
 
-Words words words
+Source: Author’s analysis of data from the Federal Student Aid Data Center, reflecting high school seniors’ completions as of July 31 each year. Only public schools are included. Table A includes Colorado and Maryland, but subsequent tables do not: see full report for details. 
 
 ###  {.unnumbered}
 
-Section divide
+Tables A1 through A9 inform Table 1 in the report. 
 
 ## FAFSA completion rates by demographics
+
+The set of figures below examines FAFSA completion rates changes after the introduction of FAFSA requirements, broken down by the demographics of public high schools' surrounding communities. 
 
 ###  {.tabset}
 
@@ -4409,13 +4137,17 @@ ggplotly(qNH3, width=q3width, height=q3height, tooltip="text") %>% layout(legend
 
 #### Data Source and Notes
 
-Words words words
+Source: Author’s analysis of data from the Federal Student Aid Data Center, reflecting public high school seniors’ completions as of July 31 each year. Demographic data are derived from American Community Survey datasets published by the U.S. Census Bureau. Grade 12 enrollment is derived from the U.S. Department of Education's Common Core of Data. 
+
+Notes: Below each chart is the demographic variable of interest. The 1st quintile represents the one-fifth of communities with the lowest values along the demographic variable of interest, and the 5th quintile represents the one-fifth of communities with the highest values along the demographic variable of interest. For example, for the figures labeled "Quintile: Share of population of poverty," the 1st quintile represents high-income communities, and the 5th quintile represents low-income communities. 
 
 ###  {.unnumbered}
 
-Section break
+Figures B1 through B7 inform Table 3 in the report. 
 
 ## Changes in FAFSA completion rates
+
+The set of tables below examines FAFSA completion rates changes after the introduction of FAFSA requirements, broken down by the demographics of public high schools' surrounding communities. 
 
 ###  {.tabset}
 
@@ -4559,13 +4291,17 @@ kable(preprocess.t2(t2rel.NH, "Class of 2023", "Class of 2024")) %>% kable_paper
 
 #### Data Source and Notes
 
-Words words words
+Source: Author’s analysis of data from the Federal Student Aid Data Center, reflecting public high school seniors’ completions as of July 31 each year. Grade 12 enrollment is derived from the U.S. Department of Education's Common Core of Data. 
+
+Notes: The "Completion rate bracket" refers to a high school's FAFSA completion rate in the year before the policy took effect. High schools in each bracket are aggregated together. 
 
 ###  {.unnumbered}
 
-Section break
+Tables C1 through C7 inform Table 2 in the report. 
 
 ## Changes in Pell Grants Within One Year of Implementation
+
+The set of tables below examines how the number of Pell Grant recipients at institutions have changed after the institutions' states have implemented FAFSA requirements. 
 
 ###  {.tabset}
 
@@ -4689,17 +4425,17 @@ selectionTable <- selectionTable %>% add_row(
   `Selected institutions` = "All MSIs"
 )
 selectionTable <- selectionTable %>% add_row(
-  `Variable name` = "UPGRNTP", 
+  `Variable name` = "PCTPELL", 
   `Variable` = "High Pell", 
   `Selected institutions` = "High-Pell institutions"
 )
 selectionTable <- selectionTable %>% add_row(
-  `Variable name` = "UPGRNTP", 
+  `Variable name` = "PCTPELL", 
   `Variable` = "Medium Pell", 
   `Selected institutions` = "Medium-Pell institutions"
 )
 selectionTable <- selectionTable %>% add_row(
-  `Variable name` = "UPGRNTP", 
+  `Variable name` = "PCTPELL", 
   `Variable` = "Low Pell", 
   `Selected institutions` = "Low-Pell institutions"
 )
@@ -4742,7 +4478,7 @@ preprocessRecipients <- function(data0){
   data0$`Selected institutions` <- as.factor(data0$`Selected institutions`)
   data0$`Selected institutions` <- factor(data0$`Selected institutions`, levels=setLevels)
   
-  data0 <- data0 %>% arrange(`Selected state`, `Selected institutions`)
+  data0 <- data0 %>% arrange(`Comparison window`, `Selected state`, `Selected institutions`)
   
   return(data0)
   
@@ -4786,7 +4522,7 @@ preprocessDisbursements <- function(data0){
   data0$`Selected institutions` <- as.factor(data0$`Selected institutions`)
   data0$`Selected institutions` <- factor(data0$`Selected institutions`, levels=setLevels)
   
-  data0 <- data0 %>% arrange(`Selected state`, `Selected institutions`)
+  data0 <- data0 %>% arrange(`Comparison window`, `Selected state`, `Selected institutions`)
 
   return(data0)
   
@@ -4973,40 +4709,44 @@ kable(preprocessTotals(totalsPull)) %>% kable_paper("hover", full_width = F)
 
 #### Data Source and Notes
 
-Word words words
+Source: Author's analysis of data from the Federal Student Aid Data Center, reflecting Pell Grants over the full award year, with institutional information derived from the College Scorecard.
+
+Notes: The maximum window of comparison uses the last year before policy enactment and compares it to 2023-24, the latest year for which full Pell Grant data are available. "Pell share" refers to the "PCTPELL" variable in the College Scorecard, with values below 30% considered "low," values between 30% and 60% considered "medium," and values above 60% considered "high." 
 
 ###  {.unnumbered}
 
-Section break
+Tables D1 through D7 inform Table 4 in the report. 
 
 ## Changes in Undergraduate Enrollment
+
+The set of tables below examines how the number of undergraduate students enrolled at institutions have changed after the institutions' states have implemented FAFSA requirements. 
 
 ###  {.tabset}
 
 ```{r studentLevels}
 setStudentLevels <- c(
-  "All undergrads", 
-  "Asian", 
-  "Black or African American", 
-  "Hispanic or Latino", 
-  "Native American or Alaska Native", 
-  "Native Hawaiian or Other Pacific Islander", 
-  "White", 
+  "All undergraduates", 
+  "Asian undergraduates", 
+  "Black or African American undergraduates", 
+  "Hispanic or Latino undergraduates", 
+  "Native American or Alaska Native undergraduates", 
+  "Native Hawaiian or Other Pacific Islander undergraduates", 
+  "White undergraduates", 
   "Two or more races", 
-  "First-time undergrads", 
-  "Full-time undergrads", 
-  "First-time full-time undergrads", 
-  "Part-time undergrads", 
-  "First-time part-time undergrads", 
-  "Undergrads at high-Pell institutions", 
-  "Undergrads at medium-Pell institutions", 
-  "Undergrads at low-Pell institutions", 
-  "Undergrads at public institutions", 
-  "Undergrads at nonprofit institutions", 
-  "Undergrads at for-profit institutions", 
-  "Undergrads at certificate-granting institutions", 
-  "Undergrads at associate-granting institutions", 
-  "Undergrads at bachelor-granting institutions"
+  "First-time undergraduates", 
+  "Full-time undergraduates", 
+  "Full-time first-time undergraduates",
+  "Part-time undergraduates",
+  "Part-time first-time undergraduates",
+  "Undergraduates at high-Pell institutions", 
+  "Undergraduates at medium-Pell institutions", 
+  "Undergraduates at low-Pell institutions", 
+  "Undergraduates at public institutions", 
+  "Undergraduates at nonprofit institutions", 
+  "Undergraduates at for-profit institutions", 
+  "Undergraduates at certificate-granting institutions", 
+  "Undergraduates at associate-granting institutions", 
+  "Undergraduates at bachelor-granting institutions"
 )
 ```
 
@@ -5022,157 +4762,157 @@ studentTable <- data.frame(
 
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "All undergrads"
+  `Selected students` = "All undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "ASIA",
-  `Selected students` = "Asian"
+  `Selected students` = "Asian undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "BKAA",
-  `Selected students` = "Black or African American"
+  `Selected students` = "Black or African American undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "HISP",
-  `Selected students` = "Hispanic or Latino"
+  `Selected students` = "Hispanic or Latino undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "AIAN",
-  `Selected students` = "Native American or Alaska Native"
+  `Selected students` = "Native American or Alaska Native undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "NHPI",
-  `Selected students` = "Native Hawaiian or Other Pacific Islander"
+  `Selected students` = "Native Hawaiian or Other Pacific Islander undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "WHIT",
-  `Selected students` = "White"
+  `Selected students` = "White undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "2MOR",
-  `Selected students` = "Two or more races"
+  `Selected students` = "Two or more races undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "First-time undergrads",
+  `Student category` = "First-time undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "First-time undergrads"
+  `Selected students` = "First-time undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Full-time undergrads",
+  `Student category` = "Full-time undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "Full-time undergrads"
+  `Selected students` = "Full-time undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "First-time full-time undergrads",
+  `Student category` = "Full-time first-time undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "First-time full-time undergrads"
+  `Selected students` = "Full-time first-time undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "Part-time undergrads",
+  `Student category` = "Part-time undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "Part-time undergrads"
+  `Selected students` = "Part-time undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "All",
-  `Student category` = "First-time part-time undergrads",
+  `Student category` = "Part-time first-time undergraduates",
   `Variable of interest` = "None",
   `Demographic group` = "TOTL",
-  `Selected students` = "First-time part-time undergrads"
+  `Selected students` = "Part-time first-time undergraduates"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "High Pell",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PCTPELL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at high-Pell institutions"
+  `Selected students` = "Undergraduates at high-Pell institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "Medium Pell",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PCTPELL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at medium-Pell institutions"
+  `Selected students` = "Undergraduates at medium-Pell institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "Low Pell",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PCTPELL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at low-Pell institutions"
+  `Selected students` = "Undergraduates at low-Pell institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "1",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "CONTROL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at public institutions"
+  `Selected students` = "Undergraduates at public institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "2",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "CONTROL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at nonprofit institutions"
+  `Selected students` = "Undergraduates at nonprofit institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "3",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "CONTROL",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at for-profit institutions"
+  `Selected students` = "Undergraduates at for-profit institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "1",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PREDDEG",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at certificate-granting institutions"
+  `Selected students` = "Undergraduates at certificate-granting institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "2",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PREDDEG",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at associate-granting institutions"
+  `Selected students` = "Undergraduates at associate-granting institutions"
 )
 studentTable <- studentTable %>% add_row(
   `Variable` = "3",
-  `Student category` = "Undergrads",
+  `Student category` = "Undergraduates",
   `Variable of interest` = "PREDDEG",
   `Demographic group` = "TOTL",
-  `Selected students` = "Undergrads at bachelor-granting institutions"
+  `Selected students` = "Undergraduates at bachelor-granting institutions"
 )
 
 ```
@@ -5308,9 +5048,11 @@ preprocessEnroll <- function(data0){
     is.na(`Selected students`)==FALSE
   )
   
-  data0 <- data0 %>% select(
+  data0 <- data0 %>% rename(
+    `Comparison years` = `Comparison years (Fall semester)`
+  ) %>% select(
     `Selected state`, 
-    `Comparison years`, 
+    `Comparison years (Fall semester)`, 
     `Selected students`, 
     `Enrollment change, selected state`, 
     `Enrollment change, rest of U.S.`, 
@@ -5320,7 +5062,7 @@ preprocessEnroll <- function(data0){
   data0$`Selected students` <- as.factor(data0$`Selected students`)
   data0$`Selected students` <- factor(data0$`Selected students`, levels=setStudentLevels)
   
-  data0 <- data0 %>% arrange(`Selected state`, `Selected students`)
+  data0 <- data0 %>% arrange(`Comparison years (Fall semester)`, `Selected state`, `Selected students`)
   
   return(data0)
   
@@ -5370,13 +5112,17 @@ kable(preprocessEnroll(enroll.race)) %>% kable_paper("hover", full_width = F)
 
 #### Data Source and Notes 
 
-Words words words
+Source: Author's analysis of data from the Integrated Postsecondary Education Data System (IPEDS), fall enrollment survey, with institutional information derived from the College Scorecard. 
+
+Notes: "Pell share" refers to the "PCTPELL" variable in the College Scorecard, with values below 30% considered "low," values between 30% and 60% considered "medium," and values above 60% considered "high." 
 
 ###  {.unnumbered}
 
-Section break
+Tables E1 through E5 inform Table 5 in the report. 
 
 ## Additional analyses
+
+The set of tables below represent separate analyses on the number of students in a state with an active policy, FAFSA completion in California by high schools' Cal-SOAP consortium member status, and estimated U.S. citizens living with a noncitizen adult family member. See the full report for the context for these analyses.
 
 ###  {.tabset}
 
@@ -5399,7 +5145,7 @@ kable(activeStudents) %>% kable_paper("hover", full_width = F)
 
 #### Cal-SOAP
 
-##### Table F2: FAFSA Completion in California by High Schools' Cal-SOAP Consortium Member Status
+##### Table F2: FAFSA completion in California by high schools' Cal-SOAP consortium member status
 
 ```{r preprocessCalSoap}
 comp1 <- comp1 %>% mutate(
@@ -5415,8 +5161,8 @@ comp1 <- comp1 %>% mutate(
 ) %>% mutate(
   `Percentage point change` = ifelse(
     `Percentage point change` >= 0, 
-    paste("+", round(`Percentage point change` * 100, 2), " pp", sep=""), 
-    paste("-", round(`Percentage point change` * 100, 2), " pp", sep="")
+    paste("+", round(`Percentage point change` * 100, 1), " pp", sep=""), 
+    paste("-", round(`Percentage point change` * 100, 1), " pp", sep="")
   )
 ) %>% mutate(
   `Class of 2022` = percent(`Class of 2022`, accuracy=0.1), 
@@ -5435,67 +5181,63 @@ kable(comp1) %>% kable_paper("hover", full_width = F)
 
 #### Mixed-Status Families
 
-##### Table F3: Estimated U.S. Citizens Living with a Noncitizen, Nationwide and in Mandatory FAFSA States
+##### Table F3: Estimated U.S. citizens living with a noncitizen adult family member, nationwide and in mandatory FAFSA states
 
 ```{r preprocessMixedStatus}
 
 preprocessMixedStatus <- function(data0){
   
-  data0 <- data0 %>% filter(
-  `Mixed household` == "Mixed"
-) %>% select(
-  -(`Mixed household`)
-) %>% mutate(
-  `PWGTP` = comma(round(`PWGTP`, -3))
-)
-  data0$`State`[data0$`State`=="Overall"] <- "U.S. overall"
-  
-  data0 <- data0 %>% arrange(`State`)
-  
+  data0 <- data0 %>% arrange(
+    `State`
+  ) %>% filter(
+    `State` %in% c(
+      "AL",
+      "CA", 
+      "IL", 
+      "IN",
+      "NE", 
+      "NJ", 
+      "NY", 
+      "OK", 
+      "TX"
+    )
+  )
+
+  data0 <- data0 %>% add_row(
+    `State` = "U.S. overall", 
+    `Young adults aged 17 to 23` = sum(data0$`Young adults aged 17 to 23`, na.rm=TRUE), 
+    `Grade 12 students` = sum(data0$`Grade 12 students`, na.rm=TRUE)
+  )
+    
+  data0 <- data0 %>% mutate(
+    `Young adults aged 17 to 23` = comma(round(`Young adults aged 17 to 23`, -3)), 
+    `Grade 12 students` = comma(round(`Grade 12 students`, -3))
+  ) 
+
   return(data0)
 }
-
-agg0 <- rbind(
-  preprocessMixedStatus(agg0overall), 
-  preprocessMixedStatus(agg0states)
-) %>% rename(
-  `Overall` = `PWGTP`
-)
-
-agg1 <- rbind(
-  preprocessMixedStatus(agg1overall), 
-  preprocessMixedStatus(agg1states)
-) %>% rename(
-  `Enrolled in Grade 12` = `PWGTP`
-)
-
-agg2 <- rbind(
-  preprocessMixedStatus(agg2overall), 
-  preprocessMixedStatus(agg2states)
-) %>% rename(
-  `Aged 17 to 23` = `PWGTP`
-)
-
-mixedStatus <- full_join(x=agg0, y=full_join(
-  x=agg1, y=agg2, by="State"
-), by="State") %>% select(
-  `State`, 
-  `Overall`, 
-  `Enrolled in Grade 12`, 
-  `Aged 17 to 23`
-)
 
 ```
 
 ```{r mixedStatus}
-kable(mixedStatus) %>% kable_paper("hover", full_width = F)
+kable(aggMS) %>% kable_paper("hover", full_width = F)
 ```
 
 #### Data Source and Notes 
 
-Words words words
+*Active policies* 
+Source: author's analysis of data from the U.S. Department of Education's Common Core of Data, reflecting public high school grade 12 enrollment. States with an active mandate include Alabama, California, Colorado, Illinois, Indiana, Maryland, Nebraska, New Jersey, New York, Oklahoma, and Texas. 
+
+*Cal-SOAP*
+Source: Author's analysis of data from the Federal Student Aid Data Center, reflecting public high school seniors’ completions as of July 31 each year. Only high schools in California are included. We derived the list of high schools that are members of a Cal-SOAP consortium from Cal-SOAP consortia websites. We were unable to obtain information for the East Bay & Solano County Consortium. The websites for the San Bernardino County Consortium and the San Diego & Imperial Counties Consortium only listed district names and not high school names, so we included all public high schools within the listed districts. The lists of high schools for the Riverside County Consortium and the Sacramento Consortium were received via email correspondence. 
+
+*Mixed-Status Families*
+Source: Author's analysis of 1-Year American Community Survey (ACS) Public Use Microdata Sample (PUMS) datasets from the U.S. Census Bureau, reflecting survey year 2023. Data reflecting group quarters is excluded. To calculate these figures, we first identified subfamilies in the PUMS dataset containing a noncitizen adult (aged 32+) and a chid who would likely be counted as dependent if they filed the FAFSA (see below for more details). Totals are rounded to the nearest 1,000.  
+
+Notes: Individuals are typically treated as dependent for FAFSA-filing purposes until they are aged 24, married, or enrolled in graduate school. The second column of Table F3 reflects citizens who are aged 17 to 23, are not married, and who are not enrolled in graduate school. The third table of column F3 reflects citizens who are enrolled in grade 12 and are not married. 
 
 ###  {.unnumbered}
 
-Section break
+Table F2 informs Table 6 in the report, and Table F3 informs Table 7 in the report. 
 
+Please email Peter Granville at [granville@tcf.org](granville@tcf.org) with any questions.
