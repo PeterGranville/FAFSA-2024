@@ -676,7 +676,7 @@ mergeAll <- rbind(
 rm(addYear)
 
 calSoap <- mergeAll
-frpl <- mergeAll
+altMethods <- mergeAll
 
 #### End #### 
 
@@ -3596,246 +3596,414 @@ rm(agg1723, aggG12)
 #### FRPL vs. Poverty Levels        ####
 ########################################
 
-# #### Write function to load FRPL data ####
-# 
-# loadFRPL <- function(filename, year0, selectedState){
-#   
-#   resultsDF <- data.frame(
-#     `NCESSCH` = numeric(), 
-#     `SCH_NAME` = character(),
-#     `STATENAME` = character(), 
-#     `Year` = numeric(),
-#     `FRPL source` = character(), 
-#     `FRPL students` = numeric(), 
-#     check.names = FALSE
-#   )
-#   
-#   tempDF <- read.csv(filename, header=TRUE) %>% select(
-#     `NCESSCH`, 
-#     `SCH_NAME`, 
-#     `STATENAME`,
-#     `DATA_GROUP`, 
-#     `LUNCH_PROGRAM`, 
-#     `STUDENT_COUNT`
-#   )
-#   
-#   if(selectedState != "None"){
-#     tempDF <- tempDF %>% filter(
-#       `STATENAME` == selectedState
-#     )
-#   }
-#   
-#   for(i in (1:length(unique(tempDF$`NCESSCH`)))){
-#     
-#     if(i %% 1000 == 0){
-#       print(paste("Running school number ", comma(i), " out of ", comma(length(unique(tempDF$`NCESSCH`))), " for the year ", year0, ".", sep=""))
-#     }
-#     
-#     selectedSchool <- tempDF %>% filter(
-#       `NCESSCH` == unique(tempDF$`NCESSCH`)[i]
-#     )
-#     
-#     selectedSchool.FRPL <- tempDF %>% filter(
-#       `NCESSCH` == unique(tempDF$`NCESSCH`)[i], 
-#       `DATA_GROUP` == "Free and Reduced-price Lunch Table", 
-#       `LUNCH_PROGRAM` %in% c("Free lunch qualified", "Reduced-price lunch qualified"),
-#       is.na(`STUDENT_COUNT`)==FALSE
-#     ) 
-#     selectedSchool.DC <- tempDF %>% filter(
-#       `NCESSCH` == unique(tempDF$`NCESSCH`)[i], 
-#       `DATA_GROUP` == "Direct Certification", 
-#       is.na(`STUDENT_COUNT`)==FALSE
-#     ) 
-# 
-#     # If FRPL is available, use FRPL. 
-#     # If FRPL is not available, use Direct Certification. 
-#     if(nrow(selectedSchool.FRPL) > 0){
-#       selectedSchool.FRPL <- selectedSchool.FRPL %>% filter(
-#         `LUNCH_PROGRAM` %in% c("Free lunch qualified", "Reduced-price lunch qualified")
-#       )
-#       frpl.students <- sum(selectedSchool.FRPL$`STUDENT_COUNT`)
-#       frpl.source <- "FRPL count"
-#     }else{
-#       if(nrow(selectedSchool.DC) > 0){
-#         frpl.students <- sum(selectedSchool.DC$`STUDENT_COUNT`)
-#         frpl.source <- "Direct Certification count"
-#       }else{
-#         frpl.students <- NA
-#         frpl.source <- "None found"
-#       }
-#     }
-#     
-#     resultsDF <- resultsDF %>% add_row(
-#       `NCESSCH` = selectedSchool$`NCESSCH`[1], 
-#       `SCH_NAME` = selectedSchool$`SCH_NAME`[1],
-#       `STATENAME` = selectedSchool$`STATENAME`[1], 
-#       `Year` = year0,
-#       `FRPL source` = frpl.source, 
-#       `FRPL students` = frpl.students
-#     )
-#   
-#     rm(selectedSchool, selectedSchool.FRPL, selectedSchool.DC, frpl.students, frpl.source)
-#     
-#   }
-#   rm(i)
-#   
-#   return(resultsDF)
-#   
-# }
-# 
-# #### End #### 
-# 
-# #### Load FRPL data ####
-# 
-# setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
-# 
-# # importFRPL <- rbind(
-# #   loadFRPL("ccd_sch_033_1617.csv", 2017, "None"), 
-# #   loadFRPL("ccd_sch_033_1718.csv", 2018, "None"), 
-# #   loadFRPL("ccd_sch_033_1819.csv", 2019, "None"),
-# #   loadFRPL("ccd_sch_033_1920.csv", 2020, "None"), 
-# #   loadFRPL("ccd_sch_033_2021.csv", 2021, "None"), 
-# #   loadFRPL("ccd_sch_033_2122.csv", 2022, "None"), 
-# #   loadFRPL("ccd_sch_033_2223.csv", 2023, "None"), 
-# #   loadFRPL("ccd_sch_033_2324.csv", 2024, "None")
-# # )
-# 
-# importFRPL <- rbind(
-#   loadFRPL("ccd_sch_033_1617.csv", 2017, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_1718.csv", 2018, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_1819.csv", 2019, "LOUISIANA"),
-#   loadFRPL("ccd_sch_033_1920.csv", 2020, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_2021.csv", 2021, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_2122.csv", 2022, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_2223.csv", 2023, "LOUISIANA"), 
-#   loadFRPL("ccd_sch_033_2324.csv", 2024, "LOUISIANA")
-# )
-# 
-# #### End #### 
-# 
-# #### Write function to load school enrollment data ####
-# 
-# loadEnroll <- function(filename, year0, selectedState){
-#   
-#   tempDF <- read.csv(filename, header=TRUE) %>% select(
-#     `NCESSCH`, 
-#     `LEAID`, 
-#     `STATENAME`,
-#     `STUDENT_COUNT`, 
-#     `TOTAL_INDICATOR`
-#   ) %>% filter(
-#     `TOTAL_INDICATOR`=="Derived - Education Unit Total minus Adult Education Count"
-#   ) %>% select(
-#     -(`TOTAL_INDICATOR`)
-#   ) %>% mutate(
-#     `Year` = rep(year0), 
-#     `STUDENT_COUNT` = as.numeric(`STUDENT_COUNT`)
-#   ) 
-#   
-#   if(selectedState != "None"){
-#     tempDF <- tempDF %>% filter(`STATENAME`==selectedState)
-#   }
-#   
-#   return(tempDF)
-#   
-# }
-# 
-# #### End ####
-# 
-# #### Load school enrollment data ####
-# 
-# setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
-# 
-# # importEnroll <- rbind(
-# #   loadEnroll("ccd_sch_052_1617.csv", 2017, "None"),
-# #   loadEnroll("ccd_sch_052_1718.csv", 2018, "None"),
-# #   loadEnroll("ccd_sch_052_1819.csv", 2019, "None"),
-# #   loadEnroll("ccd_sch_052_1920.csv", 2020, "None"),
-# #   loadEnroll("ccd_sch_052_2021.csv", 2021, "None"),
-# #   loadEnroll("ccd_sch_052_2122.csv", 2022, "None"),
-# #   loadEnroll("ccd_sch_052_2223.csv", 2023, "None")
-# # )
-# 
-# importEnroll <- rbind(
-#   loadEnroll("ccd_sch_052_1617.csv", 2017, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_1718.csv", 2018, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_1819.csv", 2019, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_1920.csv", 2020, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_2021.csv", 2021, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_2122.csv", 2022, "LOUISIANA"),
-#   loadEnroll("ccd_sch_052_2223.csv", 2023, "LOUISIANA")
-# )
-# 
-# #### End #### 
-# 
-# #### Louisiana test ####
-# 
-# importFRPL <- importFRPL %>% rename(
-#   `SCH_NAME-FRPL` = `SCH_NAME`
-# ) %>% select(
-#   -(`STATENAME`)
-# )
-# 
-# importFRPL <- importFRPL %>% mutate(`NCESSCH` = as.character(`NCESSCH`))
-# importEnroll <- importEnroll %>% mutate(`NCESSCH` = as.character(`NCESSCH`))
-# 
-# frpl <- frpl %>% filter(`State`=="LA") %>% mutate(
-#   `Year` = substr(`Year`, 10, 13)
-# ) %>% mutate(
-#   `Year` = as.numeric(`Year`)
-# )
-# 
-# frpl <- left_join(x=frpl, y=importEnroll, by=c("NCESSCH", "Year"))
-# frpl <- left_join(x=frpl, y=importFRPL, by=c("NCESSCH", "Year"))
-# 
-# frpl.agg <- aggregate(data=frpl, cbind(
-#   `Completions`, 
-#   `Grade 12 students`, 
-#   `STUDENT_COUNT`,
-#   `FRPL students`
-#   ) ~ `LEAID` + `Year`, FUN=sum
-# ) %>% mutate(
-#   `FRPL share of enrollment` = `FRPL students` / `STUDENT_COUNT`
-# )
-# 
-# for(i in (2017:2024)){
-#   
-#   tempDF <- frpl.agg %>% filter(
-#     `Year` == i
-#   ) %>% filter(
-#     is.na(`FRPL share of enrollment`)==FALSE
-#   ) %>% mutate(
-#     `Quintile: FRPL share of enrollment` = ntile(`FRPL share of enrollment`, 5)
-#   )
-#   
-#   if(i==2017){
-#     frpl.quintiles <- tempDF
-#   }else{
-#     frpl.quintiles <- rbind(
-#       frpl.quintiles, 
-#       tempDF
-#     )
-#   }
-#   
-#   rm(tempDF)
-#   
-# }
-# 
-# frpl.quintiles <- aggregate(
-#   data=frpl.quintiles, 
-#   cbind(
-#     `Grade 12 students`, `Completions`
-#   ) ~ `Quintile: FRPL share of enrollment` + `Year`, 
-#   FUN=sum
-# ) %>% mutate(
-#   `FAFSA completion rate` = `Completions` / `Grade 12 students`
-# ) %>% pivot_wider(
-#   id_cols=c(`Quintile: FRPL share of enrollment`), 
-#   names_from=`Year`, 
-#   values_from=`FAFSA completion rate`
-# )
-# 
-# #### End #### 
+#### Format altMethods NCESSCH and Year ####
+
+altMethods <- altMethods %>% mutate(
+  `NCESSCH-ELSI` = as.numeric(`NCESSCH-ELSI`), 
+  `Year` = as.numeric(substr(`Year`, 10, 13))
+)
+
+#### End #### 
+
+#### Load FRPL data ####
+
+setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+
+importFRPL <- rbind(
+  read.csv("frpl17.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl18.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl19.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl20.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl21.csv", header=TRUE, check.names=FALSE),
+  read.csv("frpl22.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl23.csv", header=TRUE, check.names=FALSE), 
+  read.csv("frpl24.csv", header=TRUE, check.names=FALSE)
+) %>% select(
+  `NCESSCH`, 
+  `Year`, 
+  `FRPL source`, 
+  `FRPL students`
+) %>% rename(
+  `NCESSCH-ELSI` = `NCESSCH`
+)
+
+altMethods <- left_join(x=altMethods, y=importFRPL, by=c("NCESSCH-ELSI", "Year"))
+rm(importFRPL)
+
+#### End ####
+
+#### Write function to load overall school enrollment data ####
+
+loadTotalEnroll <- function(filename, year0, selectedState){
+
+  print(paste("Loading total enrollment for year ", year0, ".", sep=""))
+  
+  tempDF <- read.csv(filename, header=TRUE) %>% select(
+    `NCESSCH`,
+    `LEAID`,
+    `STATENAME`,
+    `STUDENT_COUNT`,
+    `TOTAL_INDICATOR`
+  ) %>% filter(
+    `TOTAL_INDICATOR`=="Derived - Education Unit Total minus Adult Education Count"
+  ) %>% select(
+    -(`TOTAL_INDICATOR`)
+  ) %>% mutate(
+    `Year` = rep(year0),
+    `STUDENT_COUNT` = as.numeric(`STUDENT_COUNT`)
+  ) %>% rename(
+    `FRPL_DENOM` = `STUDENT_COUNT`
+  )
+
+  if(selectedState != "None"){
+    tempDF <- tempDF %>% filter(`STATENAME`==selectedState)
+  }
+
+  return(tempDF)
+
+}
+
+#### End ####
+
+#### Load overall school enrollment data ####
+
+setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+
+importTotalEnroll <- rbind(
+  loadTotalEnroll("ccd_sch_052_1617.csv", 2017, "None"),
+  loadTotalEnroll("ccd_sch_052_1718.csv", 2018, "None"),
+  loadTotalEnroll("ccd_sch_052_1819.csv", 2019, "None"),
+  loadTotalEnroll("ccd_sch_052_1920.csv", 2020, "None"),
+  loadTotalEnroll("ccd_sch_052_2021.csv", 2021, "None"),
+  loadTotalEnroll("ccd_sch_052_2122.csv", 2022, "None"),
+  loadTotalEnroll("ccd_sch_052_2223.csv", 2023, "None"), 
+  loadTotalEnroll("ccd_sch_052_2324.csv", 2024, "None")
+) %>% rename(
+  `NCESSCH-ELSI` = `NCESSCH`
+)
+
+altMethods <- left_join(x=altMethods, y=importTotalEnroll, by=c("NCESSCH-ELSI", "Year"))
+rm(importTotalEnroll)
+
+#### End ####
+
+#### Write function to load demographics of enrollment ####
+
+loadDemoEnroll <- function(filename, year0, selectedState){
+  
+  print(paste("Loading demographic school enrollment for year ", year0, ".", sep=""))
+  
+  tempDF <- read.csv(filename, header=TRUE) %>% select(
+    `NCESSCH`,
+    `LEAID`,
+    `STATENAME`,
+    `STUDENT_COUNT`,
+    `RACE_ETHNICITY`,
+    `TOTAL_INDICATOR`
+  ) %>% filter(
+    `TOTAL_INDICATOR`=="Derived - Subtotal by Race/Ethnicity and Sex minus Adult Education Count"
+  ) %>% select(
+    -(`TOTAL_INDICATOR`)
+  ) %>% mutate(
+    `STUDENT_COUNT` = as.numeric(`STUDENT_COUNT`)
+  ) 
+  
+  tempDF1 <- aggregate(
+    data=tempDF, `STUDENT_COUNT` ~ `NCESSCH` + `LEAID` + `STATENAME` + `RACE_ETHNICITY`, FUN=sum
+  ) %>% pivot_wider(
+    id_cols=c(`NCESSCH`,
+              `LEAID`,
+              `STATENAME`), 
+    names_from=`RACE_ETHNICITY`, 
+    values_from=`STUDENT_COUNT`
+  )
+  tempDF2 <- aggregate(
+    data=tempDF, `STUDENT_COUNT` ~ `NCESSCH` + `LEAID` + `STATENAME`, FUN=sum
+  ) %>% rename(
+    `RACE_ETH_DENOM` = `STUDENT_COUNT`
+  )
+  
+  tempDF <- full_join(x=tempDF1, y=tempDF2, by=c("NCESSCH", "LEAID", "STATENAME")) %>% mutate(
+    `Year` = rep(year0)
+  )
+  
+  if(selectedState != "None"){
+    tempDF <- tempDF %>% filter(`STATENAME`==selectedState)
+  }
+  
+  return(tempDF)
+  rm(tempDF, tempDF1, tempDF2)
+  
+}
+
+#### End #### 
+
+#### Load demographic school enrollment data ####
+
+setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+
+importDemoEnroll <- rbind(
+  loadDemoEnroll("ccd_sch_052_1617.csv", 2017, "None"),
+  loadDemoEnroll("ccd_sch_052_1718.csv", 2018, "None"),
+  loadDemoEnroll("ccd_sch_052_1819.csv", 2019, "None"),
+  loadDemoEnroll("ccd_sch_052_1920.csv", 2020, "None"),
+  loadDemoEnroll("ccd_sch_052_2021.csv", 2021, "None"),
+  loadDemoEnroll("ccd_sch_052_2122.csv", 2022, "None"),
+  loadDemoEnroll("ccd_sch_052_2223.csv", 2023, "None"), 
+  loadDemoEnroll("ccd_sch_052_2324.csv", 2024, "None")
+) %>% rename(
+  `NCESSCH-ELSI` = `NCESSCH`
+)
+
+altMethods <- left_join(x=altMethods, y=importDemoEnroll, by=c("NCESSCH-ELSI", "LEAID", "STATENAME", "Year"))
+rm(importDemoEnroll)
+
+#### End #### 
+
+#### Aggregate by LEAID ####
+
+altMethods <- altMethods %>% mutate(
+  `Grade 12 students` = ifelse(is.na(`Grade 12 students`), 0, `Grade 12 students`), 
+  `Completions` = ifelse(is.na(`Completions`), 0, `Completions`), 
+  `FRPL students` = ifelse(is.na(`FRPL students`), 0, `FRPL students`), 
+  `FRPL_DENOM` = ifelse(is.na(`FRPL_DENOM`), 0, `FRPL_DENOM`), 
+  `American Indian or Alaska Native` = ifelse(is.na(`American Indian or Alaska Native`), 0, `American Indian or Alaska Native`), 
+  `Asian` = ifelse(is.na(`Asian`), 0, `Asian`), 
+  `Black or African American` = ifelse(is.na(`Black or African American`), 0, `Black or African American`), 
+  `Hispanic/Latino` = ifelse(is.na(`Hispanic/Latino`), 0, `Hispanic/Latino`), 
+  `Native Hawaiian or Other Pacific Islander` = ifelse(is.na(`Native Hawaiian or Other Pacific Islander`), 0, `Native Hawaiian or Other Pacific Islander`), 
+  `Not Specified` = ifelse(is.na(`Not Specified`), 0, `Not Specified`), 
+  `Two or more races` = ifelse(is.na(`Two or more races`), 0, `Two or more races`), 
+  `White` = ifelse(is.na(`White`), 0, `White`), 
+  `RACE_ETH_DENOM` = ifelse(is.na(`RACE_ETH_DENOM`), 0, `RACE_ETH_DENOM`)
+)
+
+altMethods <- aggregate(data=altMethods, cbind(
+  `Grade 12 students`, 
+  `Completions`, 
+  `FRPL students`, 
+  `FRPL_DENOM`, 
+  `American Indian or Alaska Native`, 
+  `Asian`, 
+  `Black or African American`,
+  `Hispanic/Latino`, 
+  `Native Hawaiian or Other Pacific Islander`,
+  `Not Specified`,
+  `Two or more races`, 
+  `White`,
+  `RACE_ETH_DENOM`
+) ~ `LEAID` + `STATENAME` + `Year`, FUN=sum) %>% mutate(
+  `FRPL share of enrollment` = `FRPL students` / `FRPL_DENOM`, 
+  `American Indian or Alaska Native share of enrollment` = `American Indian or Alaska Native` / `RACE_ETH_DENOM`, 
+  `Asian share of enrollment` = `Asian` / `RACE_ETH_DENOM`, 
+  `Black or African American share of enrollment` = `Black or African American` / `RACE_ETH_DENOM`, 
+  `Hispanic/Latino share of enrollment` = `Hispanic/Latino` / `RACE_ETH_DENOM`, 
+  `Native Hawaiian or Other Pacific Islander share of enrollment` = `Native Hawaiian or Other Pacific Islander` / `RACE_ETH_DENOM`, 
+  `Two or more races share of enrollment` = `Two or more races` / `RACE_ETH_DENOM`, 
+  `White share of enrollment` = `White` / `RACE_ETH_DENOM`
+)
+
+altMethods <- altMethods %>% mutate(
+  `Black or Latino share of enrollment` = `Black or African American share of enrollment` + `Hispanic/Latino share of enrollment`
+)
+
+#### End #### 
+
+#### Write function to calculate quintiles ####
+
+altQuintiles <- function(data0, year1, year2, selectedVar, selectedState){
+  
+  data1 <- data0 %>% filter(
+    `Year` %in% c(year1, year2)
+  ) %>% select(
+    `LEAID`, 
+    `STATENAME`, 
+    `Year`, 
+    `Grade 12 students`, 
+    `Completions`, 
+    all_of(selectedVar)
+  )
+  names(data1)[6] <- "Demographic"
+
+  # Remove all schools that have NA demographic values for either/both years
+  emptyData <- data1 %>% filter(is.na(`Demographic`))
+  data1 <- data1 %>% filter(
+    (`LEAID` %in% emptyData$`LEAID`)==FALSE
+  )
+  rm(emptyData)
+  
+  # Filter for selected state
+  if(selectedState != "None"){
+    data1 <- data1 %>% filter(`STATENAME`==selectedState)
+  } 
+  
+  # Create one demographic value per LEAID 
+  demoVals <- aggregate(data=data1, `Demographic` ~ `LEAID`, FUN=mean)
+  data1 <- data1 %>% select(-(`Demographic`))
+  data1 <- left_join(x=data1, y=demoVals, by="LEAID")
+  rm(demoVals)
+  
+  data1 <- data1 %>% mutate(
+    `Quintile` = ntile(`Demographic`, 5)
+  )
+  
+  data1 <- aggregate(data=data1, cbind(
+    `Grade 12 students`, 
+    `Completions`
+  ) ~ `Quintile` + `Year`, FUN=sum) %>% mutate(
+    `FAFSA completion rate` = `Completions` / `Grade 12 students`
+  )
+  
+  return(data1)
+  
+}
+
+#### End #### 
+
+#### Prep views of altQuintiles ####
+
+altPlotView <- function(data0){
+  
+  g1 
+  
+  data1 <- data1 %>% mutate(
+    `Quintile` = ifelse(
+      `Quintile`==1, "1st", ifelse(
+        `Quintile`==2, "2nd", ifelse(
+          `Quintile`==3, "3rd", ifelse(
+            `Quintile`==4, "4th", ifelse(
+              `Quintile`==5, "5th", NA
+            )
+          )
+        )
+      )
+    )
+  )
+  data1$`Quintile` <- factor(data1$`Quintile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
+  data1$State <- factor(data1$State)
+  data1$State <- factor(data1$State, levels=rev(levels(data1$State)))
+  data1$`For Tooltip` <- paste(
+    "State: ", gsub("Selected state: ", "", data1$State), '\n',
+    "Quintile of demographic variable: ", data1$`Quintile`, '\n',
+    "Class: ", data1$`Class`, '\n',
+    "FAFSA Completion Rate: ", percent(data1$`FAFSA completion rate`, accuracy=0.1),
+    sep=""
+  )
+  g1 <- ggplot(data=data1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Quintile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + facet_grid(`State` ~ .) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.75)) + labs(x="Year", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
+  
+  
+  return(g1)
+  rm(g1)
+  
+}
+
+altTableView <- function(data0){
+  
+  
+  
+  return(data0)
+}
+
+#### End #### 
+
+#### Run altQuintiles ####
+
+pLA1 <- altPlotView(altQuintiles(altMethods, 2017, 2018, "FRPL share of enrollment", "LOUISIANA"))
+
+yLA1 <- altTableView(altQuintiles(altMethods, 2017, 2018, "FRPL share of enrollment", "LOUISIANA"))
+
+
+# `LEAID` 
+# `STATENAME` 
+# `Year`
+# `Grade 12 students`
+# `Completions`
+# `FRPL share of enrollment` 
+# `American Indian or Alaska Native share of enrollment` 
+# `Asian share of enrollment` 
+# `Black or African American share of enrollment`
+# `Hispanic/Latino share of enrollment`
+# `Native Hawaiian or Other Pacific Islander share of enrollment` 
+# `Two or more races share of enrollment` 
+# `White share of enrollment`
+# `Black or Latino share of enrollment`
+
+#### End #### 
+
+
+
+
+
+
+
+#### Louisiana test ####
+
+importFRPL <- importFRPL %>% rename(
+  `SCH_NAME-FRPL` = `SCH_NAME`
+) %>% select(
+  -(`STATENAME`)
+)
+
+importFRPL <- importFRPL %>% mutate(`NCESSCH` = as.character(`NCESSCH`))
+importEnroll <- importEnroll %>% mutate(`NCESSCH` = as.character(`NCESSCH`))
+
+frpl <- frpl %>% filter(`State`=="LA") %>% mutate(
+  `Year` = substr(`Year`, 10, 13)
+) %>% mutate(
+  `Year` = as.numeric(`Year`)
+)
+
+frpl <- left_join(x=frpl, y=importEnroll, by=c("NCESSCH", "Year"))
+frpl <- left_join(x=frpl, y=importFRPL, by=c("NCESSCH", "Year"))
+
+frpl.agg <- aggregate(data=frpl, cbind(
+  `Completions`,
+  `Grade 12 students`,
+  `STUDENT_COUNT`,
+  `FRPL students`
+  ) ~ `LEAID` + `Year`, FUN=sum
+) %>% mutate(
+  `FRPL share of enrollment` = `FRPL students` / `STUDENT_COUNT`
+)
+
+for(i in (2017:2024)){
+
+  tempDF <- frpl.agg %>% filter(
+    `Year` == i
+  ) %>% filter(
+    is.na(`FRPL share of enrollment`)==FALSE
+  ) %>% mutate(
+    `Quintile: FRPL share of enrollment` = ntile(`FRPL share of enrollment`, 5)
+  )
+
+  if(i==2017){
+    frpl.quintiles <- tempDF
+  }else{
+    frpl.quintiles <- rbind(
+      frpl.quintiles,
+      tempDF
+    )
+  }
+
+  rm(tempDF)
+
+}
+
+frpl.quintiles <- aggregate(
+  data=frpl.quintiles,
+  cbind(
+    `Grade 12 students`, `Completions`
+  ) ~ `Quintile: FRPL share of enrollment` + `Year`,
+  FUN=sum
+) %>% mutate(
+  `FAFSA completion rate` = `Completions` / `Grade 12 students`
+) %>% pivot_wider(
+  id_cols=c(`Quintile: FRPL share of enrollment`),
+  names_from=`Year`,
+  values_from=`FAFSA completion rate`
+)
+
+#### End ####
 
 
 
