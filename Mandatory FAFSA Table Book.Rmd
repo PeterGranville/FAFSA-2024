@@ -4688,29 +4688,15 @@ kable(recipients.all) %>% kable_paper("hover", full_width = F)
 kable(disbursements.all) %>% kable_paper("hover", full_width = F)
 ```
 
-#### By Pell Share of Enrollment
-
-##### Table D2a: Changes in Pell Grant recipients by institution's Pell share of undergraduate enrollment
-
-```{r pell.pell.a}
-kable(recipients.pell) %>% kable_paper("hover", full_width = F)
-```
-
-##### Table D2b: Changes in Pell Grant disbursements by institution's Pell share of undergraduate enrollment
-
-```{r pell.pell.b}
-kable(disbursements.pell) %>% kable_paper("hover", full_width = F)
-```
-
 #### By Control
 
-##### Table D3a: Changes in Pell Grant recipients by institution's control
+##### Table D2a: Changes in Pell Grant recipients by institution's control
 
 ```{r pell.control.a}
 kable(recipients.control) %>% kable_paper("hover", full_width = F)
 ```
 
-##### Table D3b: Changes in Pell Grant disbursements by institution's control
+##### Table D2b: Changes in Pell Grant disbursements by institution's control
 
 ```{r pell.control.b}
 kable(disbursements.control) %>% kable_paper("hover", full_width = F)
@@ -4718,13 +4704,13 @@ kable(disbursements.control) %>% kable_paper("hover", full_width = F)
 
 #### By Predominant Degree
 
-##### Table D4a: Changes in Pell Grant recipients by institution's predominant degree awarded
+##### Table D3a: Changes in Pell Grant recipients by institution's predominant degree awarded
 
 ```{r pell.preddeg.a}
 kable(recipients.preddeg) %>% kable_paper("hover", full_width = F)
 ```
 
-##### Table D4b: Changes in Pell Grant disbursements by institution's predominant degree awarded
+##### Table D3b: Changes in Pell Grant disbursements by institution's predominant degree awarded
 
 ```{r pell.preddeg.b}
 kable(disbursements.preddeg) %>% kable_paper("hover", full_width = F)
@@ -4732,7 +4718,7 @@ kable(disbursements.preddeg) %>% kable_paper("hover", full_width = F)
 
 #### By MSI Status 
 
-##### Table D5a: Changes in Pell Grant recipients by institution's MSI status
+##### Table D4a: Changes in Pell Grant recipients by institution's MSI status
 
 ```{r pell.msi.a}
 kable(recipients.msi) %>% kable_paper("hover", full_width = F)
@@ -4740,7 +4726,7 @@ kable(recipients.msi) %>% kable_paper("hover", full_width = F)
 
 Note that only MSI categories that are present in the selected state are included in Table D5a. 
 
-##### Table D5b: Changes in Pell Grant disbursements by institution's MSI status
+##### Table D4b: Changes in Pell Grant disbursements by institution's MSI status
 
 ```{r pell.msi.b}
 kable(disbursements.msi) %>% kable_paper("hover", full_width = F)
@@ -4750,13 +4736,13 @@ Note that only MSI categories that are present in the selected state are include
 
 #### Maximum Window of Comparison
 
-##### Table D6a: Changes in Pell Grant recipients for all institutions
+##### Table D5a: Changes in Pell Grant recipients for all institutions
 
 ```{r pell.bigwindow.a}
 kable(preprocessRecipients(bigWindowR)) %>% kable_paper("hover", full_width = F)
 ```
 
-##### Table D6b: Changes in Pell Grant disbursements for all institutions
+##### Table D5b: Changes in Pell Grant disbursements for all institutions
 
 ```{r pell.bigwindow.b}
 kable(preprocessDisbursements(bigWindowD)) %>% kable_paper("hover", full_width = F)
@@ -4764,7 +4750,7 @@ kable(preprocessDisbursements(bigWindowD)) %>% kable_paper("hover", full_width =
 
 #### Totals
 
-##### Table D7: Total count of Pell Grant recipients
+##### Table D6: Total count of Pell Grant recipients
 
 ```{r pell.total}
 kable(preprocessTotals(totalsPull)) %>% kable_paper("hover", full_width = F)
@@ -4774,11 +4760,11 @@ kable(preprocessTotals(totalsPull)) %>% kable_paper("hover", full_width = F)
 
 Source: Author's analysis of data from the Federal Student Aid Data Center, reflecting Pell Grants over the full award year, with institutional information derived from the College Scorecard.
 
-Notes: The maximum window of comparison uses the last year before policy enactment and compares it to 2023-24, the latest year for which full Pell Grant data are available. "Pell share" refers to the "PCTPELL" variable in the College Scorecard, with values below 30% considered "low," values between 30% and 60% considered "medium," and values above 60% considered "high." 
+Notes: The maximum window of comparison uses the last year before policy enactment and compares it to 2023-24, the latest year for which full Pell Grant data are available. 
 
 ###  {.unnumbered}
 
-Tables D1 through D7 inform Table 4 in the report. 
+Tables D1 through D6 inform Table 4 in the report. 
 
 ---
 

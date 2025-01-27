@@ -170,6 +170,7 @@ processFafsa <- function(fafsa){
     codeCount <- aggregate(data=fafsa, `Count` ~ `School Code`, FUN=sum) %>% filter(`Count` > 1)
     fafsa <- fafsa %>% select(-(`Count`))
     problemCodes <- codeCount$`School Code`
+    print(paste("The number of school codes with duplicate schools is ", length(problemCodes), ".", sep=""))
     rm(codeCount)
     for(i in (1:length(problemCodes))){
       tempData <- fafsa %>% filter(`School Code` == problemCodes[i])
@@ -243,6 +244,7 @@ processElsi <- function(elsi){
   
   elsi <- elsi %>% mutate(`ComboName` = paste(`SCH_NAME`, `MCITY`, `ST`, `MZIP`, sep="-")) %>% mutate(`Count` = rep(1))
   comboCount <- aggregate(data=elsi, `Count` ~ `ComboName`, FUN=sum) %>% filter(`Count` > 1)
+  print(paste("The number of problem schools is ", nrow(comboCount), ".", sep=""))
   
   for(i in (1:length(unique(comboCount$`ComboName`)))){
     
@@ -508,10 +510,8 @@ mergeFunction <- function(com){
     `Name` = character(), 
     `City` = character(),
     `State` = character(),
-    `Applications submitted through May 24, 2024` = numeric(), 
-    `Applications completed through May 24, 2024` = numeric(), 
-    `Applications submitted through May 24, 2023` = numeric(), 
-    `Applications completed through May 24, 2023` = numeric(), 
+    `Submissions` = numeric(), 
+    `Completions` = numeric(), 
     `Index` = numeric(),
     `MZIP` = character(), 
     check.names=FALSE
@@ -560,7 +560,7 @@ mergeFunction <- function(com){
 
 #### End #### 
 
-#### Merge 2024 data ####
+#### Merge data ####
 
 merge24 <- mergeFunction(list(fafsa24, elsi24))[[1]]
 merge23 <- mergeFunction(list(fafsa23, elsi23))[[1]]
@@ -803,6 +803,7 @@ census2 <- census2 %>% mutate(
 #   `Alt total` = `White` + `Black` + `Native American` + `Asian` + `Pacific Islander` + `Other race` + `Two or more races` + `Hispanic or Latino`
 # )
 # table(test$`Total population`==test$`Alt total`)
+# rm(test)
 
 census2 <- census2 %>% filter(
   is.na(`Total population`)==FALSE, 
@@ -1755,16 +1756,13 @@ processT2 <- function(data0, state0, year1, year2, measurement){
     `Year` = ifelse(
       `Year`==year1, "Before policy", ifelse(
         `Year`==year2, "After policy", NA)
-    ),
-    `Completion rate` = `Completions` / `Grade 12 students`
-  ) %>% filter(
-    is.na(`NCESSCH`)==FALSE
-  )
+    )
+  ) 
   
-  data1 <- aggregate(data=data1, cbind(`Completions`, `Grade 12 students`) ~ `NCESSCH` + `Year`, FUN=sum)
+  data1 <- aggregate(data=data1, cbind(`Completions`, `Grade 12 students`) ~ `NCESSCH-ELSI` + `Year`, FUN=sum)
   
   data1.students <- data1 %>% pivot_wider(
-    id_cols=c(`NCESSCH`), 
+    id_cols=c(`NCESSCH-ELSI`), 
     names_from=`Year`, 
     values_from=`Grade 12 students`
   ) %>% rename(
@@ -1772,14 +1770,14 @@ processT2 <- function(data0, state0, year1, year2, measurement){
     `Grade 12 students after policy` = `After policy`
   )
   data1.completions <- data1 %>% pivot_wider(
-    id_cols=c(`NCESSCH`), 
+    id_cols=c(`NCESSCH-ELSI`), 
     names_from=`Year`, 
     values_from=`Completions`
   ) %>% rename(
     `Completions before policy` = `Before policy`,
     `Completions after policy` = `After policy`
   )
-  data1 <- full_join(x=data1.students, y=data1.completions, by="NCESSCH")
+  data1 <- full_join(x=data1.students, y=data1.completions, by="NCESSCH-ELSI")
   rm(data1.students, data1.completions)
   
   print(paste("Number of rows before removing those with NAs: ", nrow(data1)))
@@ -1943,296 +1941,6 @@ t2rel.NH <- processT2(
 #### End #### 
 
 ########################################
-#### Which state has the best FAFSA ####
-#### completion rate in communities ####
-#### with at least 25% of the pop.  #### 
-#### living in poverty?             ####
-########################################
-
-# #### Aggregate data ####
-# 
-# analysis17 <- analysis17 %>% mutate(`Year` = rep("Class of 2017"))
-# analysis18 <- analysis18 %>% mutate(`Year` = rep("Class of 2018"))
-# analysis19 <- analysis19 %>% mutate(`Year` = rep("Class of 2019"))
-# analysis20 <- analysis20 %>% mutate(`Year` = rep("Class of 2020"))
-# analysis21 <- analysis21 %>% mutate(`Year` = rep("Class of 2021"))
-# analysis22 <- analysis22 %>% mutate(`Year` = rep("Class of 2022"))
-# analysis23 <- analysis23 %>% mutate(`Year` = rep("Class of 2023"))
-# analysis24 <- analysis24 %>% mutate(`Year` = rep("Class of 2024"))
-# 
-# Q1 <- rbind(
-#   analysis17, 
-#   analysis18, 
-#   analysis19, 
-#   analysis20, 
-#   analysis21, 
-#   analysis22, 
-#   analysis23, 
-#   analysis24
-# ) %>% select(
-#   `ZCTA5`, 
-#   `Grade 12 students`, 
-#   `Completions`, 
-#   `Average household income`, 
-#   `Share of population in poverty`,
-#   `State`, 
-#   `Year`
-# ) 
-# 
-# #### End #### 
-# 
-# #### Select variables ####  
-# 
-# Q2 <- Q1 %>% mutate(
-#   `Income under $65,000` = ifelse(`Average household income` < 65000, "Under $65,000", "Over $65,000"),
-#   `Poverty rate over 25%` = ifelse(`Share of population in poverty` > 0.25, "Over 25% poverty rate", "Under 25% poverty rate"),
-#   `Count` = rep(1)
-# )
-# 
-# Q2A <- aggregate(
-#   data=Q2, `Count` ~ `Income under $65,000` + `Year`, FUN=sum
-# ) %>% pivot_wider(
-#   id_cols=c(`Year`), names_from=`Income under $65,000`, values_from=`Count`
-# )
-# Q2B <- aggregate(
-#   data=Q2, `Count` ~ `Poverty rate over 25%` + `Year`, FUN=sum
-# ) %>% pivot_wider(
-#   id_cols=c(`Year`), names_from=`Poverty rate over 25%`, values_from=`Count`
-# )
-# 
-# Q2C <- aggregate(
-#   data=Q2, `Count` ~ `Income under $65,000` + `Year` + `State`, FUN=sum
-# ) %>% filter(
-#   `Year` == "Class of 2023"
-# ) %>% select(-(`Year`)) %>% pivot_wider(
-#   id_cols=c(`State`), names_from=`Income under $65,000`, values_from=`Count`
-# )
-# Q2D <- aggregate(
-#   data=Q2, `Count` ~ `Poverty rate over 25%` + `Year` + `State`, FUN=sum
-# ) %>% filter(
-#   `Year` == "Class of 2023"
-# ) %>% select(-(`Year`)) %>% pivot_wider(
-#   id_cols=c(`State`), names_from=`Poverty rate over 25%`, values_from=`Count`
-# )
-# 
-# #### End #### 
-# 
-# #### Chart each state by FAFSA completion rate for ZIPs with under $65,000 average house income #### 
-# 
-# Q3 <- Q2 %>% filter(
-#   `Income under $65,000` == "Under $65,000"
-# )
-# Q3$`State`[(Q3$`State` %in% c("AL", "CA", "IL", "IN", "LA", "NH", "TX"))==FALSE] <- "Rest of U.S."
-# Q3 <- aggregate(
-#   data=Q3, cbind(
-#     `Grade 12 students`, `Completions`
-#   ) ~ `State` + `Year`, FUN=sum
-# ) %>% mutate(
-#   `FAFSA completion rate` = `Completions` / `Grade 12 students`
-# ) 
-# figQ3 <- ggplot(data=Q3, mapping=aes(x=`Year`, y=`FAFSA completion rate`, color=`State`, group=`State`)) + geom_point() + geom_line() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.8))
-# ggplotly(figQ3)
-# 
-# Q4 <- Q2 %>% filter(
-#   `Poverty rate over 25%` == "Over 25% poverty rate"
-# )
-# Q4$`State`[(Q4$`State` %in% c("AL", "CA", "IL", "IN", "LA", "NH", "TX"))==FALSE] <- "Rest of U.S."
-# Q4 <- aggregate(
-#   data=Q4, cbind(
-#     `Grade 12 students`, `Completions`
-#   ) ~ `State` + `Year`, FUN=sum
-# ) %>% mutate(
-#   `FAFSA completion rate` = `Completions` / `Grade 12 students`
-# )
-# figQ4 <- ggplot(data=Q4, mapping=aes(x=`Year`, y=`FAFSA completion rate`, color=`State`, group=`State`)) + geom_point() + geom_line() + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.8))
-# ggplotly(figQ4)
-# 
-# #### End #### 
-
-########################################
-#### Scatter plot of counties       ####
-########################################
-
-# #### Load data ####
-# 
-# # Generated by "State Briefing Books.R" 
-# 
-# setwd("/Users/peter_granville/FAFSA-2024/Outputs for State Briefing Books")
-# 
-# merge.AL <- read.csv(
-#   "High School FAFSAs - County level - All data - Alabama.csv", header=TRUE, check.names=FALSE
-# ) %>% mutate(
-#   `State` = rep("AL")
-# ) 
-# merge.CA <- read.csv(
-#   "High School FAFSAs - County level - All data - California.csv", header=TRUE, check.names=FALSE
-# ) %>% mutate(
-#   `State` = rep("CA")
-# )
-# merge.IL <- read.csv(
-#   "High School FAFSAs - County level - All data - Illinois.csv", header=TRUE, check.names=FALSE
-# ) %>% mutate(
-#   `State` = rep("IL")
-# )
-# merge.LA <- read.csv(
-#   "High School FAFSAs - County level - All data - Louisiana.csv", header=TRUE, check.names=FALSE
-# ) %>% mutate(
-#   `State` = rep("LA")
-# )
-# merge.TX <- read.csv(
-#   "High School FAFSAs - County level - All data - Texas.csv", header=TRUE, check.names=FALSE
-# ) %>% mutate(
-#   `State` = rep("TX")
-# )
-# 
-# mergeCounty <- rbind(
-#   merge.AL, merge.CA, merge.IL, merge.LA, merge.TX
-# )
-# rm(merge.AL, merge.CA, merge.IL, merge.LA, merge.TX)
-# 
-# importEnrollment <- mergeCounty %>% filter(
-#   `Year`=="Class of 2023"
-# ) %>% select(
-#   `County`, `State`, `Grade 12 students`
-# )
-# mergeCounty <- mergeCounty %>% filter(
-#   `Year` %in% c("Class of 2017", "Class of 2023")
-# ) %>% pivot_wider(
-#   id_cols=c(`County`, `State`), 
-#   names_from=`Year`, 
-#   values_from=`Completion rate`
-# )
-# mergeCounty <- left_join(x=mergeCounty, y=importEnrollment, by=c("County", "State"))
-# rm(importEnrollment)
-# 
-# setwd("/Users/peter_granville/FAFSA-2024/Census data/ACSST5Y2022.S1701_2024-11-14T222327")
-# countyPov <- read.csv(
-#   "ACSST5Y2022.S1701-Data.csv", header=TRUE
-# ) %>% filter(
-#   `NAME` != "Geographic Area Name"
-# ) %>% select(
-#   `NAME`, 
-#   `S1701_C01_001E`, # Estimate!!Total!!Population for whom poverty status is determined
-#   `S1701_C02_001E` # Estimate!!Below poverty level!!Population for whom poverty status is determined
-# ) %>% mutate(
-#   `S1701_C01_001E` = as.numeric(`S1701_C01_001E`),
-#   `S1701_C02_001E` = as.numeric(`S1701_C02_001E`) 
-# ) %>% mutate(
-#   `Poverty rate` = `S1701_C02_001E` / `S1701_C01_001E`
-# ) %>% rename(
-#   `County` = `NAME`
-# ) %>% mutate(
-#   `County name` = rep(NA), 
-#   `State name` = rep(NA)
-# )
-# for(i in (1:nrow(countyPov))){
-#   countyPov$`County name`[i] <- (strsplit(countyPov$County, ", ")[i])[[1]][1]
-#   countyPov$`State name`[i] <- (strsplit(countyPov$County, ", ")[i])[[1]][2]
-# }
-# rm(i)
-# countyPov <- countyPov %>% select(
-#   `County name`, 
-#   `State name`, 
-#   `Poverty rate`
-# ) %>% filter(
-#   `State name` %in% c("Alabama", "California", "Illinois", "Louisiana", "Texas")
-# )
-# countyPov$`State name`[countyPov$`State name`=="Alabama"] <- "AL"
-# countyPov$`State name`[countyPov$`State name`=="California"] <- "CA"
-# countyPov$`State name`[countyPov$`State name`=="Illinois"] <- "IL"
-# countyPov$`State name`[countyPov$`State name`=="Louisiana"] <- "LA"
-# countyPov$`State name`[countyPov$`State name`=="Texas"] <- "TX"
-# countyPov <- countyPov %>% rename(
-#   `County` = `County name`, 
-#   `State` = `State name`
-# )
-# countyPov$County[(countyPov$`County`=="DeKalb County") & (countyPov$`State`=="AL")] <- "De Kalb County"
-# countyPov$County[(countyPov$`County`=="St. Clair County") & (countyPov$`State`=="AL")] <- "St Clair County"
-# countyPov$County[(countyPov$`County`=="DeKalb County") & (countyPov$`State`=="IL")] <- "De Kalb County"
-# countyPov$County[(countyPov$`County`=="DuPage County") & (countyPov$`State`=="IL")] <- "Du Page County"
-# countyPov$County[(countyPov$`County`=="LaSalle County") & (countyPov$`State`=="IL")] <- "La Salle County"
-# countyPov$County[(countyPov$`County`=="St. Clair County") & (countyPov$`State`=="IL")] <- "St Clair County"
-# countyPov$County[(countyPov$`County`=="LaSalle Parish") & (countyPov$`State`=="LA")] <- "La Salle Parish"
-# countyPov$County[(countyPov$`County`=="DeWitt County") & (countyPov$`State`=="TX")] <- "De Witt County"
-# mergeCounty <- left_join(
-#   x=mergeCounty, y=countyPov, by=c("County", "State")
-# ) %>% filter(
-#   is.na(`Class of 2017`)==FALSE, 
-#   is.na(`Class of 2023`)==FALSE, 
-#   is.na(`Poverty rate`)==FALSE
-# )
-# rm(countyPov)
-# 
-# #### End #### 
-# 
-# #### Create scatterplot ####
-# 
-# scatter1 <- mergeCounty %>% mutate(
-#   `Change, 2017 to 2023` = `Class of 2023` - `Class of 2017`
-# )
-# # All combined
-# ggplot(data=scatter1, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(size=`Grade 12 students`, alpha=1)) + scale_x_continuous(labels=percent_format(accuracy=1)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm")
-# # Separated by state
-# ggplot(data=scatter1, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(size=`Grade 12 students`, alpha=1)) + facet_grid(`State` ~ .) + scale_x_continuous(labels=percent_format(accuracy=1)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm", color="red")
-# 
-# #### End #### 
-
-########################################
-#### Scatter plot of ZIPs           ####
-########################################
-
-# #### Prepare data #### 
-# 
-# analysis17 <- analysis17 %>% mutate(
-#   `Year` = rep("Class of 2017")
-# )
-# analysis23 <- analysis23 %>% mutate(
-#   `Year` = rep("Class of 2023")
-# )
-# 
-# scatter2 <- rbind(
-#   analysis17, 
-#   analysis23
-# ) %>% mutate(
-#   `Completion rate` = `Completions` / `Grade 12 students`
-# ) %>% select(
-#   `ZCTA5`,
-#   `State`, 
-#   `Completion rate`, 
-#   `Year`
-# ) %>% pivot_wider(
-#   id_cols=c(`ZCTA5`, `State`), 
-#   names_from=`Year`, 
-#   values_from=`Completion rate`
-# ) %>% mutate(
-#   `Change, 2017 to 2023` = `Class of 2023` - `Class of 2017`
-# )
-# 
-# importDemographics <- analysis23 %>% select(
-#   `ZCTA5`, 
-#   `Share of population in poverty`, 
-#   `No college share`,
-#   `Black or Latino share`
-# )
-# scatter2 <- left_join(x=scatter2, y=importDemographics, by="ZCTA5")
-# rm(importDemographics)
-# 
-# #### End #### 
-# 
-# #### Generate plot ####
-# 
-# scatter2$`State`[(scatter2$`State` %in% c("AL", "CA", "IL", "LA", "TX"))==FALSE] <- "Rest of U.S."
-# 
-# scatter2 <- scatter2 %>% rename(
-#   `Poverty rate` = `Share of population in poverty`
-# )
-# 
-# ggplot(data=scatter2, mapping=aes(x=`Poverty rate`, y=`Change, 2017 to 2023`)) + geom_point(aes(alpha=1)) + facet_grid(`State` ~ .) + scale_x_continuous(labels=percent_format(accuracy=0.5)) + scale_y_continuous(limits=c(-0.25, 0.5)) + scale_alpha(guide = 'none') + geom_smooth(method = "lm", color="red")
-# 
-# 
-# #### End #### 
-
-########################################
 #### Pell change data               ####
 ########################################
 
@@ -2295,7 +2003,6 @@ scorecard <- read.csv(
   `MAIN`,
   `CONTROL`,
   `PREDDEG`,
-  `PCTPELL`,
   `HBCU`,
   `PBI`,
   `ANNHI`,
@@ -2313,14 +2020,6 @@ scorecard <- read.csv(
   `MSI` = ifelse(
     (`HBCU`==1) | (`PBI`==1) | (`ANNHI`==1) | (`TRIBAL`==1) | (`AANAPII`==1) | (`HSI`==1) | (`NANTI`==1), 
     1, 0
-  )
-) %>% mutate(
-  `PCTPELL` = ifelse(
-    between(`PCTPELL`, 0, 0.3), "Low Pell", ifelse(
-      between(`PCTPELL`, 0.3, 0.6), "Medium Pell", ifelse(
-        between(`PCTPELL`, 0.6, 1), "High Pell", NA
-      )
-    )
   )
 ) %>% filter(
   `OPEID` > 0
@@ -2367,7 +2066,6 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
     `OPEID`, 
     `CONTROL`,
     `PREDDEG`,
-    `PCTPELL`,
     `HBCU`,
     `PBI`,
     `ANNHI`,
@@ -2382,12 +2080,11 @@ processPell <- function(data0, state0, year1, year2, interestVar, printTotals){
     all_of(year1), 
     all_of(year2)
   )
-  names(data1)[16] <- "Before policy"
-  names(data1)[17] <- "After policy"
+  names(data1)[15] <- "Before policy"
+  names(data1)[16] <- "After policy"
   
   if(interestVar == "CONTROL"){data1 <- data1 %>% mutate(`Variable` = `CONTROL`)}
   if(interestVar == "PREDDEG"){data1 <- data1 %>% mutate(`Variable` = `PREDDEG`)}
-  if(interestVar == "PCTPELL"){data1 <- data1 %>% mutate(`Variable` = `PCTPELL`)}
   if(interestVar == "HBCU"){data1 <- data1 %>% mutate(`Variable` = `HBCU`)}
   if(interestVar == "PBI"){data1 <- data1 %>% mutate(`Variable` = `PBI`)}
   if(interestVar == "ANNHI"){data1 <- data1 %>% mutate(`Variable` = `ANNHI`)}
@@ -2459,13 +2156,6 @@ recipientsPull <- rbind(
   processPell(pell.recipients, "AL", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.recipients, "TX", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.recipients, "CA", "2022-23", "2023-24", "PREDDEG", printTotals=FALSE), 
-  
-  # PCTPELL 
-  processPell(pell.recipients, "LA", "2017-18", "2018-19", "PCTPELL", printTotals=FALSE),
-  processPell(pell.recipients, "IL", "2020-21", "2021-22", "PCTPELL", printTotals=FALSE),
-  processPell(pell.recipients, "AL", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
-  processPell(pell.recipients, "TX", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
-  processPell(pell.recipients, "CA", "2022-23", "2023-24", "PCTPELL", printTotals=FALSE),
   
   # HBCU 0	No
   # HBCU 1	Yes
@@ -2561,13 +2251,6 @@ disbursementsPull <- rbind(
   processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PREDDEG", printTotals=FALSE),
   processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PREDDEG", printTotals=FALSE),
-  
-  # PCTPELL
-  processPell(pell.disbursements, "LA", "2017-18", "2018-19", "PCTPELL", printTotals=FALSE),
-  processPell(pell.disbursements, "IL", "2020-21", "2021-22", "PCTPELL", printTotals=FALSE),
-  processPell(pell.disbursements, "AL", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
-  processPell(pell.disbursements, "TX", "2021-22", "2022-23", "PCTPELL", printTotals=FALSE),
-  processPell(pell.disbursements, "CA", "2022-23", "2023-24", "PCTPELL", printTotals=FALSE), 
   
   # HBCU 0	No
   # HBCU 1	Yes
@@ -3508,55 +3191,12 @@ comp1 <- calSoap %>% filter(
   `LZIP`
 ) 
 
-importCensus <- census %>% select(
-  `ZCTA5`,
-  `Share of population in poverty`
-) %>% mutate(
-  `ZCTA5` = substr(`ZCTA5`, 7, 11)
-) %>% rename(
-  `LZIP` = `ZCTA5`
-)
-comp1 <- left_join(x=comp1, y=importCensus, by="LZIP")
-rm(importCensus)
-
-comp1 <- comp1 %>% mutate(
-  `Poverty bracket` = ifelse(
-    `Share of population in poverty` < 0.05, "Less than 5%", ifelse(
-      between(`Share of population in poverty`, 0.05, 0.1), "5% to 10%", ifelse(
-        between(`Share of population in poverty`, 0.1, 0.15), "10% to 15%", ifelse(
-          between(`Share of population in poverty`, 0.15, 0.2), "15% to 20%", ifelse(
-            between(`Share of population in poverty`, 0.2, 0.25), "20% to 25%", ifelse(
-              `Share of population in poverty` > 0.25, "More than 25%", NA
-            )
-          )
-        )
-      )
-    )
-  )
-)
-
 comp1 <- aggregate(data=comp1, cbind(
   `Completions`, 
   `Grade 12 students`
 ) ~ `CalSOAP` + `Year`, FUN=sum) %>% mutate(
   `FAFSA completion rate` = `Completions` / `Grade 12 students`
 )
-
-# comp1 <- aggregate(data=comp1, cbind(
-#   `Completions`, 
-#   `Grade 12 students`
-# ) ~ `Poverty bracket` + `CalSOAP` + `Year`, FUN=sum)
-# 
-# comp1$`Poverty bracket` <- factor(comp1$`Poverty bracket`, levels=c(
-#   "Less than 5%",
-#   "5% to 10%", 
-#   "10% to 15%", 
-#   "15% to 20%", 
-#   "20% to 25%", 
-#   "More than 25%"
-# ))
-# 
-# ggplot(data=comp1, mapping=aes(x=`Poverty bracket`, y=`FAFSA completion rate`, fill=`CalSOAP`)) + geom_bar(stat = "identity", position=position_dodge2(padding=0.1)) + facet_grid(`Year` ~ .) + scale_y_continuous(labels=percent_format(accuracy=1))
 
 #### End #### 
 
@@ -3832,9 +3472,15 @@ altQuintiles <- function(data0, year1, year2, selectedVar, selectedState){
   )
   rm(emptyData)
   
-  # Filter for selected state
+  # Identify selected state
   if(selectedState != "None"){
-    data1 <- data1 %>% filter(`STATENAME`==selectedState)
+    data1 <- data1 %>% mutate(
+      `State` = ifelse(
+        `STATENAME`==selectedState, 
+        "Selected State", 
+        "Rest of U.S."
+      )
+    )
   } 
   
   # Create one demographic value per LEAID 
@@ -3850,7 +3496,7 @@ altQuintiles <- function(data0, year1, year2, selectedVar, selectedState){
   data1 <- aggregate(data=data1, cbind(
     `Grade 12 students`, 
     `Completions`
-  ) ~ `Quintile` + `Year`, FUN=sum) %>% mutate(
+  ) ~ `Quintile` + `State` + `Year`, FUN=sum) %>% mutate(
     `FAFSA completion rate` = `Completions` / `Grade 12 students`
   )
   
