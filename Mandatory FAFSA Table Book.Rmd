@@ -3257,6 +3257,722 @@ rm(agg1723, aggG12)
 #### Alternative quintiles          #### 
 ########################################
 
+# #### Format altMethods NCESSCH and Year ####
+# 
+# altMethods <- altMethods %>% mutate(
+#   `NCESSCH-ELSI` = as.numeric(`NCESSCH-ELSI`), 
+#   `Year` = as.numeric(substr(`Year`, 10, 13))
+# )
+# 
+# #### End #### 
+# 
+# #### Write function to load overall school enrollment data ####
+# 
+# loadTotalEnroll <- function(filename){
+#   
+#   tempDF <- read.csv(filename, header=TRUE) %>% select(
+#     `NCESSCH`,
+#     `LEAID`,
+#     `STUDENT_COUNT`,
+#     `TOTAL_INDICATOR`
+#   ) %>% filter(
+#     `TOTAL_INDICATOR`=="Derived - Education Unit Total minus Adult Education Count"
+#   ) %>% select(
+#     -(`TOTAL_INDICATOR`)
+#   ) %>% mutate(
+#     `STUDENT_COUNT` = as.numeric(`STUDENT_COUNT`)
+#   ) %>% rename(
+#     `FRPL_DENOM` = `STUDENT_COUNT`, 
+#     `NCESSCH-ELSI` = `NCESSCH`
+#   )
+# 
+#   return(tempDF)
+#   
+# }
+# 
+# #### End ####
+# 
+# #### Write function to load FRPL data and merge with enrollment data ####
+# 
+# prepFRPL <- function(filename.FRPL, filename.Enroll){
+#   
+#   setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+#   
+#   importFRPL <- read.csv(
+#     filename.FRPL, header=TRUE, check.names=FALSE
+#   ) %>% rename(
+#     `NCESSCH-ELSI` = `NCESSCH`
+#   )
+#   
+#   importEnrollment <- loadTotalEnroll(filename.Enroll)
+#   
+#   importFRPL <- full_join(
+#     x=importFRPL, y=importEnrollment, by="NCESSCH-ELSI"
+#   ) %>% filter(
+#     is.na(`FRPL students`)==FALSE, 
+#     is.na(`FRPL_DENOM`)==FALSE, 
+#     `FRPL_DENOM` > 0
+#   ) 
+#   
+#   importFRPL <- aggregate(
+#     data=importFRPL, cbind(`FRPL students`, `FRPL_DENOM`) ~ `LEAID`, FUN=sum
+#   ) %>% mutate(
+#     `FRPL share of enrollment` = `FRPL students` / `FRPL_DENOM`
+#   ) %>% mutate(
+#     `FRPL share of enrollment` = ifelse(is.na(`FRPL share of enrollment`), 0, `FRPL share of enrollment`)
+#   )
+#   
+#   return(importFRPL)
+#   rm(importFRPL, importEnrollment)
+# }
+# 
+# #### End ####
+# 
+# #### Run function #### 
+# 
+# frpl <- rbind(
+#   prepFRPL(filename.FRPL="frpl17.csv", filename.Enroll="ccd_sch_052_1617.csv"), 
+#   prepFRPL(filename.FRPL="frpl18.csv", filename.Enroll="ccd_sch_052_1718.csv"), 
+#   prepFRPL(filename.FRPL="frpl19.csv", filename.Enroll="ccd_sch_052_1819.csv"), 
+#   prepFRPL(filename.FRPL="frpl20.csv", filename.Enroll="ccd_sch_052_1920.csv"), 
+#   prepFRPL(filename.FRPL="frpl21.csv", filename.Enroll="ccd_sch_052_2021.csv"), 
+#   prepFRPL(filename.FRPL="frpl22.csv", filename.Enroll="ccd_sch_052_2122.csv"), 
+#   prepFRPL(filename.FRPL="frpl23.csv", filename.Enroll="ccd_sch_052_2223.csv"), 
+#   prepFRPL(filename.FRPL="frpl24.csv", filename.Enroll="ccd_sch_052_2324.csv")
+# )
+# 
+# frplAvg <- aggregate(data=frpl, `FRPL share of enrollment` ~ `LEAID`, FUN=mean)
+# 
+# frplAvg <- frplAvg %>% mutate(
+#   `FRPL share of enrollment` = ifelse(
+#     `FRPL share of enrollment` > 1, 1, `FRPL share of enrollment`
+#   )
+# )
+# 
+# #### End ####
+# 
+# #### Write function to load demographics of enrollment ####
+# 
+# loadDemoEnroll <- function(filename, year0){
+#   
+#   setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
+#   
+#   tempDF <- read.csv(filename, header=TRUE) %>% select(
+#     `NCESSCH`,
+#     `LEAID`,
+#     `STATENAME`,
+#     `STUDENT_COUNT`,
+#     `RACE_ETHNICITY`,
+#     `TOTAL_INDICATOR`
+#   ) %>% filter(
+#     `TOTAL_INDICATOR`=="Derived - Subtotal by Race/Ethnicity and Sex minus Adult Education Count"
+#   ) %>% select(
+#     -(`TOTAL_INDICATOR`)
+#   ) %>% mutate(
+#     `STUDENT_COUNT` = as.numeric(`STUDENT_COUNT`)
+#   ) 
+#   
+#   tempDF1 <- aggregate(
+#     data=tempDF, `STUDENT_COUNT` ~ `LEAID` + `RACE_ETHNICITY`, FUN=sum
+#   ) %>% pivot_wider(
+#     id_cols=c(`LEAID`), 
+#     names_from=`RACE_ETHNICITY`, 
+#     values_from=`STUDENT_COUNT`
+#   )
+#   tempDF2 <- aggregate(
+#     data=tempDF, `STUDENT_COUNT` ~ `LEAID`, FUN=sum
+#   ) %>% rename(
+#     `RACE_ETH_DENOM` = `STUDENT_COUNT`
+#   )
+#   
+#   tempDF <- full_join(x=tempDF1, y=tempDF2, by="LEAID") %>% filter(
+#     is.na(`RACE_ETH_DENOM`)==FALSE,
+#     `RACE_ETH_DENOM` > 0
+#   ) %>% mutate(
+#     `American Indian or Alaska Native` = ifelse(is.na(`American Indian or Alaska Native`), 0, `American Indian or Alaska Native`),
+#     `Asian` = ifelse(is.na(`Asian`), 0, `Asian`),
+#     `Black or African American` = ifelse(is.na(`Black or African American`), 0, `Black or African American`),
+#     `Hispanic/Latino` = ifelse(is.na(`Hispanic/Latino`), 0, `Hispanic/Latino`),
+#     `Native Hawaiian or Other Pacific Islander` = ifelse(is.na(`Native Hawaiian or Other Pacific Islander`), 0, `Native Hawaiian or Other Pacific Islander`),
+#     `Two or more races` = ifelse(is.na(`Two or more races`), 0, `Two or more races`),
+#     `White` = ifelse(is.na(`White`), 0, `White`)
+#   ) %>% mutate(
+#     `American Indian or Alaska Native share of enrollment` = `American Indian or Alaska Native` / `RACE_ETH_DENOM`, # American Indian or Alaska Native
+#     `Asian share of enrollment` = `Asian` / `RACE_ETH_DENOM`, # Asian
+#     `Black or African American share of enrollment` = `Black or African American` / `RACE_ETH_DENOM`, # Black or African American
+#     `Hispanic/Latino share of enrollment` = `Hispanic/Latino` / `RACE_ETH_DENOM`, # Hispanic/Latino
+#     `Native Hawaiian or Other Pacific Islander share of enrollment` = `Native Hawaiian or Other Pacific Islander` / `RACE_ETH_DENOM`, # Native Hawaiian or Other Pacific Islander
+#     `Two or more races share of enrollment` = `Two or more races` / `RACE_ETH_DENOM`, # Two or more races
+#     `White share of enrollment` = `White` / `RACE_ETH_DENOM`, # White
+#     `Year` = rep(year0)
+#   ) %>% select(
+#     `LEAID`,
+#     `American Indian or Alaska Native share of enrollment`, 
+#     `Asian share of enrollment`,
+#     `Black or African American share of enrollment`,
+#     `Hispanic/Latino share of enrollment`,
+#     `Native Hawaiian or Other Pacific Islander share of enrollment`,
+#     `Two or more races share of enrollment`,
+#     `White share of enrollment`,
+#     `Year`
+#   )
+#   
+#   return(tempDF)
+#   rm(tempDF, tempDF1, tempDF2)
+#   
+# }
+# 
+# #### End #### 
+# 
+# #### Load demographic school enrollment data ####
+# 
+# demoEnroll <- rbind(
+#   loadDemoEnroll("ccd_sch_052_1617.csv", 2017),
+#   loadDemoEnroll("ccd_sch_052_1718.csv", 2018),
+#   loadDemoEnroll("ccd_sch_052_1819.csv", 2019),
+#   loadDemoEnroll("ccd_sch_052_1920.csv", 2020),
+#   loadDemoEnroll("ccd_sch_052_2021.csv", 2021),
+#   loadDemoEnroll("ccd_sch_052_2122.csv", 2022),
+#   loadDemoEnroll("ccd_sch_052_2223.csv", 2023), 
+#   loadDemoEnroll("ccd_sch_052_2324.csv", 2024)
+# ) 
+# 
+# demoAvg <- aggregate(data=demoEnroll, cbind(
+#   `American Indian or Alaska Native share of enrollment`, 
+#   `Asian share of enrollment`,
+#   `Black or African American share of enrollment`,
+#   `Hispanic/Latino share of enrollment`,
+#   `Native Hawaiian or Other Pacific Islander share of enrollment`,
+#   `Two or more races share of enrollment`,
+#   `White share of enrollment`
+# ) ~ `LEAID`, FUN=mean)
+# 
+# demoAvg <- demoAvg %>% mutate(
+#   `American Indian or Alaska Native share of enrollment` = ifelse(`American Indian or Alaska Native share of enrollment` > 1, 1, `American Indian or Alaska Native share of enrollment`),
+#   `Asian share of enrollment` = ifelse(`Asian share of enrollment` > 1, 1, `Asian share of enrollment`),
+#   `Black or African American share of enrollment` = ifelse(`Black or African American share of enrollment` > 1, 1, `Black or African American share of enrollment`),
+#   `Hispanic/Latino share of enrollment` = ifelse(`Hispanic/Latino share of enrollment` > 1, 1, `Hispanic/Latino share of enrollment`),
+#   `Native Hawaiian or Other Pacific Islander share of enrollment` = ifelse(`Native Hawaiian or Other Pacific Islander share of enrollment` > 1, 1, `Native Hawaiian or Other Pacific Islander share of enrollment`),
+#   `Two or more races share of enrollment` = ifelse(`Two or more races share of enrollment` > 1, 1, `Two or more races share of enrollment`),
+#   `White share of enrollment` = ifelse(`White share of enrollment` > 1, 1, `White share of enrollment`)
+# )
+# 
+# #### End #### 
+# 
+# #### Aggregate altMethods by LEAID and import demographic data ####
+# 
+# districtData <- aggregate(data=altMethods, cbind(
+#   `Completions`, 
+#   `Grade 12 students`
+# ) ~ `LEAID` + `State` + `Year`, FUN=sum)
+# 
+# districtData <- left_join(x=districtData, y=frplAvg, by="LEAID")
+# districtData <- left_join(x=districtData, y=demoAvg, by="LEAID")
+# 
+# districtData <- districtData %>% mutate(
+#   `Black or Latino share of enrollment` = `Black or African American share of enrollment` + `Hispanic/Latino share of enrollment`
+# )
+# 
+# districtData17 <- districtData %>% filter(`Year`==2017)
+# districtData18 <- districtData %>% filter(`Year`==2018)
+# districtData19 <- districtData %>% filter(`Year`==2019)
+# districtData20 <- districtData %>% filter(`Year`==2020)
+# districtData21 <- districtData %>% filter(`Year`==2021)
+# districtData22 <- districtData %>% filter(`Year`==2022)
+# districtData23 <- districtData %>% filter(`Year`==2023)
+# districtData24 <- districtData %>% filter(`Year`==2024)
+# 
+# #### End #### 
+# 
+# #### Write function to calculate percentiles ####
+# 
+# calcPercentiles <- function(analysis, nGroups, year, stateLever, stateSelection, inclusiveExclusive){
+#   
+#   rankInputs <- analysis %>% select(
+#     `LEAID`, 
+#     `State`,
+#     `FRPL share of enrollment`,
+#     `American Indian or Alaska Native share of enrollment`, 
+#     `Asian share of enrollment`,
+#     `Black or African American share of enrollment`,
+#     `Hispanic/Latino share of enrollment`,
+#     `Native Hawaiian or Other Pacific Islander share of enrollment`,
+#     `Two or more races share of enrollment`,
+#     `White share of enrollment`, 
+#     `Black or Latino share of enrollment`
+#   )
+#   rankOutputs <- analysis %>% select(
+#     `LEAID`, 
+#     `State`,
+#     `Grade 12 students`,
+#     `Completions`
+#   )
+#   
+#   if(stateLever==TRUE){
+#     if(inclusiveExclusive=="Inclusive"){
+#       rankInputs <- rankInputs %>% filter(`State` %in% stateSelection)
+#       rankOutputs <- rankOutputs %>% filter(`State` %in% stateSelection)
+#     }else{
+#       rankInputs <- rankInputs %>% filter((`State` %in% stateSelection)==FALSE)
+#       rankOutputs <- rankOutputs %>% filter((`State` %in% stateSelection)==FALSE)
+#     }
+#   }
+#   
+#   for(i in (3:ncol(rankInputs))){
+#     
+#     tempTiles <- rankInputs %>% select(`LEAID`, names(rankInputs)[i])
+#     names(tempTiles)[2] <- "InterestVar"
+#     tempTiles <- tempTiles %>% mutate(`nTile` = ntile(`InterestVar`, nGroups)) %>% select(-(`InterestVar`))
+#     names(tempTiles)[2] <- paste("Groups: ", names(rankInputs)[i], sep="")
+#     if(i == 3){
+#       nTiles <- tempTiles
+#     }else{
+#       nTiles <- full_join(x=nTiles, y=tempTiles, by="LEAID")
+#     }
+#     rm(tempTiles)
+#   }
+#   rm(i, nGroups)
+#   nTiles <- full_join(x=nTiles, y=rankOutputs, by="LEAID") %>% mutate(`Class` = rep(year))
+#   
+#   if(stateLever==TRUE){
+#     if(inclusiveExclusive=="Inclusive"){
+#       if(length(stateSelection) == 1){
+#         nTiles <- nTiles %>% mutate(`State` = rep(paste("Selected state: ", stateSelection[1], sep="")))
+#       }else{
+#         nTiles <- nTiles %>% mutate(`State` = rep("Selected states"))
+#       }
+#     }else{
+#       nTiles <- nTiles %>% mutate(`State` = rep("Rest of U.S."))
+#     }
+#   }
+#   
+#   return(nTiles)
+#   rm(rankInputs, rankOutputs, nTiles)
+# }
+# 
+# #### End #### 
+# 
+# #### Create quintile datasets #### 
+# 
+# quintiles.national <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", FALSE, c("None"), "Neither"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", FALSE, c("None"), "Neither") 
+# )
+# 
+# quintiles.louisiana <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("LA"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("LA"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("LA"), "Exclusive") 
+# )
+# 
+# quintiles.illinois <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IL"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IL"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IL"), "Exclusive") 
+# )
+# 
+# quintiles.texas <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("TX"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("TX"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("TX"), "Exclusive") 
+# )
+# 
+# quintiles.alabama <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("AL"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("AL"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("AL"), "Exclusive") 
+# )
+# 
+# quintiles.california <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("CA"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("CA"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("CA"), "Exclusive") 
+# )
+# 
+# quintiles.indiana <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IN"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IN"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IN"), "Exclusive") 
+# )
+# 
+# quintiles.newhampshire <- rbind(
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("NH"), "Inclusive"), 
+#   calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("NH"), "Exclusive"), 
+#   calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("NH"), "Exclusive") 
+# )
+# 
+# #### End #### 
+# 
+# #### Write function to chart quintiles #### 
+# 
+# quintilePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYears){
+#   
+#   newTiles <- tilesDF
+#   newVar <- tilesVar
+#   
+#   if(stateBreakout==TRUE){
+#     newTiles <- newTiles %>% select(
+#       `Class`,
+#       `State`,
+#       `Completions`, 
+#       `Grade 12 students`,
+#       all_of(tilesVar)
+#     ) %>% rename(
+#       `InterestVar` = tilesVar
+#     ) 
+#     analysis1 <- aggregate(data=newTiles, cbind(
+#       `Completions`, 
+#       `Grade 12 students`
+#     ) ~ `InterestVar` + `State` + `Class`, FUN=sum) %>% mutate(
+#       `FAFSA completion rate` = `Completions` / `Grade 12 students`
+#     ) 
+#     if(yearLever==TRUE){
+#       analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
+#     }
+#     newVar <- gsub("Groups", "Quintile", newVar)
+#     analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
+#     analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
+#     analysis1$State <- factor(analysis1$State)
+#     analysis1$State <- factor(analysis1$State, levels=rev(levels(analysis1$State)))
+#     analysis1$`For Tooltip` <- paste(
+#       "State: ", gsub("Selected state: ", "", analysis1$State), '\n',
+#       "Quintile of demographic variable: ", analysis1$`Tile`, '\n',
+#       "Class: ", analysis1$`Class`, '\n',
+#       "FAFSA Completion Rate: ", percent(analysis1$`FAFSA completion rate`, accuracy=0.1),
+#       sep=""
+#     )
+#     figA <- ggplot(data=analysis1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Tile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + facet_grid(`State` ~ .) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.75)) + labs(x="Year", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
+#     
+#   }else{
+#     newTiles <- newTiles %>% select(
+#       `Class`,
+#       `Completions`, 
+#       `Grade 12 students`,
+#       all_of(tilesVar)
+#     ) %>% rename(
+#       `InterestVar` = tilesVar
+#     ) 
+#     analysis1 <- aggregate(data=newTiles, cbind(
+#       `Completions`, 
+#       `Grade 12 students`
+#     ) ~ `InterestVar` + `Class`, FUN=sum) %>% mutate(
+#       `FAFSA completion rate` = `Completions` / `Grade 12 students`
+#     ) 
+#     if(yearLever==TRUE){
+#       analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
+#     }
+#     newVar <- gsub("Groups", "Quintile", newVar)
+#     analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
+#     analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
+#     analysis1$`For Tooltip` <- paste(
+#       "Quintile of demographic variable: ", analysis1$`Tile`, '\n',
+#       "Class: ", analysis1$`Class`, '\n',
+#       "FAFSA Completion Rate: ", percent(analysis1$`FAFSA completion rate`, accuracy=0.1),
+#       sep=""
+#     )
+#     figA <- ggplot(data=analysis1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Tile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.7)) + labs(x="Year", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
+#   }
+#   
+#   return(figA)
+#   rm(analysis1, newTiles, figA, newVar)
+# }
+# 
+# #### End #### 
+# 
+# #### Write function to make table of Q1 and Q5 #### 
+# 
+# onefiveTable <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYears){
+#   
+#   newTiles <- tilesDF
+#   newVar <- tilesVar
+#   
+#   if(stateBreakout==TRUE){
+#     newTiles <- newTiles %>% select(
+#       `Class`,
+#       `State`,
+#       `Completions`, 
+#       `Grade 12 students`,
+#       all_of(tilesVar)
+#     ) %>% rename(
+#       `InterestVar` = tilesVar
+#     ) 
+#     analysis1 <- aggregate(data=newTiles, cbind(
+#       `Completions`, 
+#       `Grade 12 students`
+#     ) ~ `InterestVar` + `State` + `Class`, FUN=sum) %>% mutate(
+#       `FAFSA completion rate` = `Completions` / `Grade 12 students`
+#     ) 
+#     if(yearLever==TRUE){
+#       analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
+#     }
+#     newVar <- gsub("Groups", "Quintile", newVar)
+#     analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
+#     analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
+#     analysis1 <- analysis1 %>% filter(`Tile` %in% c("1st", "5th"))
+#     analysis1$State <- factor(analysis1$State)
+#     analysis1$State <- factor(analysis1$State, levels=rev(levels(analysis1$State)))
+#     analysis1 <- analysis1 %>% pivot_wider(
+#       id_cols=c(`Class`, `State`), 
+#       names_from=`Tile`, 
+#       values_from=`FAFSA completion rate`
+#     ) 
+#     analysis1 <- analysis1 %>% mutate(
+#       `Percentage point difference` = `1st` - `5th`
+#     )
+#     analysis1 <- analysis1 %>% arrange(
+#       `State`, `Class`
+#     ) %>% mutate(
+#       `Demographic` = rep(newVar),
+#       `1st` = percent(`1st`, accuracy=0.1), 
+#       `5th` = percent(`5th`, accuracy=0.1), 
+#       `Percentage point difference` = ifelse(
+#         `Percentage point difference` >= 0, 
+#         paste("+", round(`Percentage point difference` * 100, 2), " pp", sep=""), 
+#         paste("-", round(`Percentage point difference` * 100, 2), " pp", sep="")
+#       )
+#     ) %>% rename(
+#       `FAFSA completion rate, 1st quintile of demographic` = `1st`, 
+#       `FAFSA completion rate, 5th quintile of demographic` = `5th`
+#     ) %>% select(
+#       `Demographic`, 
+#       `State`, 
+#       `Class`, 
+#       `FAFSA completion rate, 1st quintile of demographic`, 
+#       `FAFSA completion rate, 5th quintile of demographic`,
+#       `Percentage point difference`
+#     )
+#   }else{
+#     newTiles <- newTiles %>% select(
+#       `Class`,
+#       `Completions`, 
+#       `Grade 12 students`,
+#       all_of(tilesVar)
+#     ) %>% rename(
+#       `InterestVar` = tilesVar
+#     ) 
+#     analysis1 <- aggregate(data=newTiles, cbind(
+#       `Completions`, 
+#       `Grade 12 students`
+#     ) ~ `InterestVar` + `Class`, FUN=sum) %>% mutate(
+#       `FAFSA completion rate` = `Completions` / `Grade 12 students`
+#     ) 
+#     if(yearLever==TRUE){
+#       analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
+#     }
+#     newVar <- gsub("Groups", "Quintile", newVar)
+#     analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
+#     analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
+#     analysis1 <- analysis1 %>% filter(`Tile` %in% c("1st", "5th"))
+#     analysis1 <- analysis1 %>% pivot_wider(
+#       id_cols=c(`Class`), 
+#       names_from=`Tile`, 
+#       values_from=`FAFSA completion rate`
+#     ) 
+#     analysis1 <- analysis1 %>% mutate(
+#       `Percentage point difference` = `1st` - `5th`
+#     )
+#     analysis1 <- analysis1 %>% arrange(
+#       `Class`
+#     ) %>% mutate(
+#       `Demographic` = rep(newVar),
+#       `1st` = percent(`1st`, accuracy=0.1), 
+#       `5th` = percent(`5th`, accuracy=0.1), 
+#       `Percentage point difference` = ifelse(
+#         `Percentage point difference` >= 0, 
+#         paste("+", round(`Percentage point difference` * 100, 2), " pp", sep=""), 
+#         paste("-", round(`Percentage point difference` * 100, 2), " pp", sep="")
+#       )
+#     ) %>% rename(
+#       `FAFSA completion rate, 1st quintile of demographic` = `1st`, 
+#       `FAFSA completion rate, 5th quintile of demographic` = `5th`
+#     ) %>% select(
+#       `Demographic`, 
+#       `Class`, 
+#       `FAFSA completion rate, 1st quintile of demographic`, 
+#       `FAFSA completion rate, 5th quintile of demographic`,
+#       `Percentage point difference`
+#     )
+#   }
+#   
+#   return(analysis1)
+#   rm(analysis1, newTiles, newVar)
+# }
+# 
+# #### End #### 
+# 
+# #### Quintiles: FRPL share of enrollment ####
+# 
+# pLA1 <- quintilePlot(quintiles.louisiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
+# 
+# pIL1 <- quintilePlot(quintiles.illinois, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# 
+# pAL1 <- quintilePlot(quintiles.alabama, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# 
+# pTX1 <- quintilePlot(quintiles.texas, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# pCA1 <- quintilePlot(quintiles.california, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
+# 
+# pIN1 <- quintilePlot(quintiles.indiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# 
+# pNH1 <- quintilePlot(quintiles.newhampshire, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# 
+# #### End #### 
+# 
+# #### Quintiles: Black or Latino share of enrollment ####
+# 
+# pLA2 <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
+# 
+# pIL2 <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021")) 
+# 
+# pAL2 <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# pTX2 <- quintilePlot(quintiles.texas, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# pCA2 <- quintilePlot(quintiles.california, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
+# 
+# pIN2 <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
+# 
+# pNH2 <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
+# 
+# #### End ####
+# 
+# #### One-five table: FRPL share of enrollment ####
+# 
+# yLA1 <- onefiveTable(quintiles.louisiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
+# 
+# yIL1 <- onefiveTable(quintiles.illinois, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# 
+# yAL1 <- onefiveTable(quintiles.alabama, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# 
+# yTX1 <- onefiveTable(quintiles.texas, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# yCA1 <- onefiveTable(quintiles.california, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
+# 
+# yIN1 <- onefiveTable(quintiles.indiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# 
+# yNH1 <- onefiveTable(quintiles.newhampshire, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# 
+# #### End #### 
+# 
+# #### One-five table: Black or Latino share of enrollment ####
+# 
+# yLA2 <- onefiveTable(quintiles.louisiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
+# 
+# yIL2 <- onefiveTable(quintiles.illinois, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021")) 
+# 
+# yAL2 <- onefiveTable(quintiles.alabama, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# yTX2 <- onefiveTable(quintiles.texas, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
+# 
+# yCA2 <- onefiveTable(quintiles.california, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
+# 
+# yIN2 <- onefiveTable(quintiles.indiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
+# 
+# yNH2 <- onefiveTable(quintiles.newhampshire, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
+# 
+# #### End ####
+
+########################################
+#### Alternative quintiles 2        #### 
+########################################
+
 #### Format altMethods NCESSCH and Year ####
 
 altMethods <- altMethods %>% mutate(
@@ -3285,7 +4001,7 @@ loadTotalEnroll <- function(filename){
     `FRPL_DENOM` = `STUDENT_COUNT`, 
     `NCESSCH-ELSI` = `NCESSCH`
   )
-
+  
   return(tempDF)
   
 }
@@ -3294,7 +4010,7 @@ loadTotalEnroll <- function(filename){
 
 #### Write function to load FRPL data and merge with enrollment data ####
 
-prepFRPL <- function(filename.FRPL, filename.Enroll){
+prepFRPL <- function(filename.FRPL, filename.Enroll, year0){
   
   setwd("/Users/peter_granville/FAFSA-2024/ELSI data")
   
@@ -3319,7 +4035,8 @@ prepFRPL <- function(filename.FRPL, filename.Enroll){
   ) %>% mutate(
     `FRPL share of enrollment` = `FRPL students` / `FRPL_DENOM`
   ) %>% mutate(
-    `FRPL share of enrollment` = ifelse(is.na(`FRPL share of enrollment`), 0, `FRPL share of enrollment`)
+    `FRPL share of enrollment` = ifelse(is.na(`FRPL share of enrollment`), 0, `FRPL share of enrollment`), 
+    `Year` = rep(year0)
   )
   
   return(importFRPL)
@@ -3331,25 +4048,17 @@ prepFRPL <- function(filename.FRPL, filename.Enroll){
 #### Run function #### 
 
 frpl <- rbind(
-  prepFRPL(filename.FRPL="frpl17.csv", filename.Enroll="ccd_sch_052_1617.csv"), 
-  prepFRPL(filename.FRPL="frpl18.csv", filename.Enroll="ccd_sch_052_1718.csv"), 
-  prepFRPL(filename.FRPL="frpl19.csv", filename.Enroll="ccd_sch_052_1819.csv"), 
-  prepFRPL(filename.FRPL="frpl20.csv", filename.Enroll="ccd_sch_052_1920.csv"), 
-  prepFRPL(filename.FRPL="frpl21.csv", filename.Enroll="ccd_sch_052_2021.csv"), 
-  prepFRPL(filename.FRPL="frpl22.csv", filename.Enroll="ccd_sch_052_2122.csv"), 
-  prepFRPL(filename.FRPL="frpl23.csv", filename.Enroll="ccd_sch_052_2223.csv"), 
-  prepFRPL(filename.FRPL="frpl24.csv", filename.Enroll="ccd_sch_052_2324.csv")
+  prepFRPL(filename.FRPL="frpl17.csv", filename.Enroll="ccd_sch_052_1617.csv", 2017), 
+  prepFRPL(filename.FRPL="frpl18.csv", filename.Enroll="ccd_sch_052_1718.csv", 2018), 
+  prepFRPL(filename.FRPL="frpl19.csv", filename.Enroll="ccd_sch_052_1819.csv", 2019), 
+  prepFRPL(filename.FRPL="frpl20.csv", filename.Enroll="ccd_sch_052_1920.csv", 2020), 
+  prepFRPL(filename.FRPL="frpl21.csv", filename.Enroll="ccd_sch_052_2021.csv", 2021), 
+  prepFRPL(filename.FRPL="frpl22.csv", filename.Enroll="ccd_sch_052_2122.csv", 2022), 
+  prepFRPL(filename.FRPL="frpl23.csv", filename.Enroll="ccd_sch_052_2223.csv", 2023), 
+  prepFRPL(filename.FRPL="frpl24.csv", filename.Enroll="ccd_sch_052_2324.csv", 2024)
 )
 
-frplAvg <- aggregate(data=frpl, `FRPL share of enrollment` ~ `LEAID`, FUN=mean)
-
-frplAvg <- frplAvg %>% mutate(
-  `FRPL share of enrollment` = ifelse(
-    `FRPL share of enrollment` > 1, 1, `FRPL share of enrollment`
-  )
-)
-
-#### End ####
+#### End #### 
 
 #### Write function to load demographics of enrollment ####
 
@@ -3437,399 +4146,157 @@ demoEnroll <- rbind(
   loadDemoEnroll("ccd_sch_052_2324.csv", 2024)
 ) 
 
-demoAvg <- aggregate(data=demoEnroll, cbind(
-  `American Indian or Alaska Native share of enrollment`, 
-  `Asian share of enrollment`,
-  `Black or African American share of enrollment`,
-  `Hispanic/Latino share of enrollment`,
-  `Native Hawaiian or Other Pacific Islander share of enrollment`,
-  `Two or more races share of enrollment`,
-  `White share of enrollment`
-) ~ `LEAID`, FUN=mean)
-
-demoAvg <- demoAvg %>% mutate(
-  `American Indian or Alaska Native share of enrollment` = ifelse(`American Indian or Alaska Native share of enrollment` > 1, 1, `American Indian or Alaska Native share of enrollment`),
-  `Asian share of enrollment` = ifelse(`Asian share of enrollment` > 1, 1, `Asian share of enrollment`),
-  `Black or African American share of enrollment` = ifelse(`Black or African American share of enrollment` > 1, 1, `Black or African American share of enrollment`),
-  `Hispanic/Latino share of enrollment` = ifelse(`Hispanic/Latino share of enrollment` > 1, 1, `Hispanic/Latino share of enrollment`),
-  `Native Hawaiian or Other Pacific Islander share of enrollment` = ifelse(`Native Hawaiian or Other Pacific Islander share of enrollment` > 1, 1, `Native Hawaiian or Other Pacific Islander share of enrollment`),
-  `Two or more races share of enrollment` = ifelse(`Two or more races share of enrollment` > 1, 1, `Two or more races share of enrollment`),
-  `White share of enrollment` = ifelse(`White share of enrollment` > 1, 1, `White share of enrollment`)
-)
-
 #### End #### 
 
-#### Aggregate altMethods by LEAID and import demographic data ####
+#### New function 1 ####
 
-districtData <- aggregate(data=altMethods, cbind(
-  `Completions`, 
-  `Grade 12 students`
-) ~ `LEAID` + `State` + `Year`, FUN=sum)
+newFunction1 <- function(fafsaData, frplData, demoData, year1, year2, selectedState, selectedVar, calcOption, outputType){
 
-districtData <- left_join(x=districtData, y=frplAvg, by="LEAID")
-districtData <- left_join(x=districtData, y=demoAvg, by="LEAID")
-
-districtData <- districtData %>% mutate(
-  `Black or Latino share of enrollment` = `Black or African American share of enrollment` + `Hispanic/Latino share of enrollment`
-)
-
-districtData17 <- districtData %>% filter(`Year`==2017)
-districtData18 <- districtData %>% filter(`Year`==2018)
-districtData19 <- districtData %>% filter(`Year`==2019)
-districtData20 <- districtData %>% filter(`Year`==2020)
-districtData21 <- districtData %>% filter(`Year`==2021)
-districtData22 <- districtData %>% filter(`Year`==2022)
-districtData23 <- districtData %>% filter(`Year`==2023)
-districtData24 <- districtData %>% filter(`Year`==2024)
-
-#### End #### 
-
-#### Write function to calculate percentiles ####
-
-calcPercentiles <- function(analysis, nGroups, year, stateLever, stateSelection, inclusiveExclusive){
+  fafsa1 <- fafsaData %>% select(
+    `LEAID`, 
+    `Year`, 
+    `State`, 
+    `Completions`,
+    `Grade 12 students`
+  ) 
   
-  rankInputs <- analysis %>% select(
-    `LEAID`, 
-    `State`,
-    `FRPL share of enrollment`,
-    `American Indian or Alaska Native share of enrollment`, 
-    `Asian share of enrollment`,
-    `Black or African American share of enrollment`,
-    `Hispanic/Latino share of enrollment`,
-    `Native Hawaiian or Other Pacific Islander share of enrollment`,
-    `Two or more races share of enrollment`,
-    `White share of enrollment`, 
-    `Black or Latino share of enrollment`
-  )
-  rankOutputs <- analysis %>% select(
-    `LEAID`, 
-    `State`,
-    `Grade 12 students`,
-    `Completions`
+  frpl1 <- frplData %>% select(
+    `LEAID`,
+    `Year`, 
+    `FRPL share of enrollment`
+  ) 
+  
+  demo1 <- demoData %>% mutate(
+    `Black or Latino share of enrollment` = `Black or African American share of enrollment` + `Hispanic/Latino share of enrollment`
   )
   
-  if(stateLever==TRUE){
-    if(inclusiveExclusive=="Inclusive"){
-      rankInputs <- rankInputs %>% filter(`State` %in% stateSelection)
-      rankOutputs <- rankOutputs %>% filter(`State` %in% stateSelection)
-    }else{
-      rankInputs <- rankInputs %>% filter((`State` %in% stateSelection)==FALSE)
-      rankOutputs <- rankOutputs %>% filter((`State` %in% stateSelection)==FALSE)
-    }
+  merge1 <- left_join(x=fafsa1, y=frpl1, by=c("LEAID", "Year"))
+  merge1 <- left_join(x=merge1, y=demo1, by=c("LEAID", "Year"))
+  
+  merge1 <- merge1 %>% mutate(
+    `State` = ifelse(
+      `State`==selectedState, "Selected State", "Rest of U.S."
+    )
+  )
+  
+  if(selectedVar=="FRPL share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `FRPL share of enrollment`)}
+  if(selectedVar=="American Indian or Alaska Native share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `American Indian or Alaska Native share of enrollment`)}
+  if(selectedVar=="Asian share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Asian share of enrollment`)}
+  if(selectedVar=="Black or African American share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Black or African American share of enrollment`)}
+  if(selectedVar=="Hispanic/Latino share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Hispanic/Latino share of enrollment`)}
+  if(selectedVar=="Native Hawaiian or Other Pacific Islander share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Native Hawaiian or Other Pacific Islander share of enrollment`)}
+  if(selectedVar=="Two or more races share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Two or more races share of enrollment`)}
+  if(selectedVar=="White share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `White share of enrollment`)}
+  if(selectedVar=="Black or Latino share of enrollment"){merge1 <- merge1 %>% mutate(`SelectedVar` = `Black or Latino share of enrollment`)}
+  
+  merge1 <- merge1 %>% select(
+    `LEAID`, 
+    `Year`, 
+    `State`, 
+    `Completions`, 
+    `Grade 12 students`, 
+    `SelectedVar`
+  )
+  
+  if(calcOption=="Option 1"){
+    # One quintile per district calculated using every year from 2017 to 2024 
+    merge1.inputs <- aggregate(data=merge1, `SelectedVar` ~ `LEAID` + `State`, FUN=mean)
+    merge1.inputs.select <- merge1.inputs %>% filter(`State`=="Selected State") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.inputs.others <- merge1.inputs %>% filter(`State`=="Rest of U.S.") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.inputs <- rbind(merge1.inputs.select, merge1.inputs.others) %>% select(`LEAID`, `Quintile`)
+    rm(merge1.inputs.select, merge1.inputs.others)
+    merge1.outputs <- merge1 %>% filter(`Year` %in% c(year1, year2))
+    merge1.outputs <- aggregate(data=merge1.outputs, cbind(`Completions`, `Grade 12 students`) ~ `LEAID` + `State` + `Year`, FUN=sum)
+    merge1 <- left_join(x=merge1.outputs, y=merge1.inputs, by="LEAID")
+    rm(merge1.inputs, merge1.outputs)
+  }
+  if(calcOption=="Option 2"){
+    # One quintile per district calculated using year1 and year2
+    merge1 <- merge1 %>% filter(`Year` %in% c(year1, year2))
+    merge1.inputs <- aggregate(data=merge1, `SelectedVar` ~ `LEAID` + `State`, FUN=mean)
+    merge1.inputs.select <- merge1.inputs %>% filter(`State`=="Selected State") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.inputs.others <- merge1.inputs %>% filter(`State`=="Rest of U.S.") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.inputs <- rbind(merge1.inputs.select, merge1.inputs.others) %>% select(`LEAID`, `Quintile`)
+    rm(merge1.inputs.select, merge1.inputs.others)
+    merge1.outputs <- aggregate(data=merge1, cbind(`Completions`, `Grade 12 students`) ~ `LEAID` + `State` + `Year`, FUN=sum)
+    merge1 <- left_join(x=merge1.outputs, y=merge1.inputs, by="LEAID")
+    rm(merge1.inputs, merge1.outputs)
+  }
+  if(calcOption=="Option 3"){
+    # A separate quintile per year for year1 and year2
+    merge1.y1.select <- merge1 %>% filter(`Year`==year1, `State`=="Selected State") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.y1.others <- merge1 %>% filter(`Year`==year1, `State`=="Rest of U.S.") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.y2.select <- merge1 %>% filter(`Year`==year2, `State`=="Selected State") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1.y2.others <- merge1 %>% filter(`Year`==year2, `State`=="Rest of U.S.") %>% mutate(`Quintile` = ntile(`SelectedVar`, 5))
+    merge1 <- rbind(merge1.y1.select, merge1.y1.others, merge1.y2.select, merge1.y2.others)
+    rm(merge1.y1.select, merge1.y1.others, merge1.y2.select, merge1.y2.others)
   }
   
-  for(i in (3:ncol(rankInputs))){
+  agg1 <- aggregate(
+    data=merge1, cbind(
+      `Completions`, `Grade 12 students`
+    ) ~ `Quintile` + `Year` + `State`, FUN=sum
+  ) %>% mutate(
+    `FAFSA completion rate` = `Completions` / `Grade 12 students`
+  ) %>% arrange(
+    `State`, `Quintile`, `Year`
+  ) %>% mutate(
+    `State` = ifelse(
+      `State`=="Selected State", paste("Selected state: ", selectedState, sep=""), "Rest of U.S."
+    ), 
+    `Class` = paste("Class of ", `Year`, sep="")
+  )
+
+  newVar <- paste("Quintile: ", selectedVar, sep="")
+  
+  if(outputType=="Quintile plot"){
     
-    tempTiles <- rankInputs %>% select(`LEAID`, names(rankInputs)[i])
-    names(tempTiles)[2] <- "InterestVar"
-    tempTiles <- tempTiles %>% mutate(`nTile` = ntile(`InterestVar`, nGroups)) %>% select(-(`InterestVar`))
-    names(tempTiles)[2] <- paste("Groups: ", names(rankInputs)[i], sep="")
-    if(i == 3){
-      nTiles <- tempTiles
-    }else{
-      nTiles <- full_join(x=nTiles, y=tempTiles, by="LEAID")
-    }
-    rm(tempTiles)
-  }
-  rm(i, nGroups)
-  nTiles <- full_join(x=nTiles, y=rankOutputs, by="LEAID") %>% mutate(`Class` = rep(year))
-  
-  if(stateLever==TRUE){
-    if(inclusiveExclusive=="Inclusive"){
-      if(length(stateSelection) == 1){
-        nTiles <- nTiles %>% mutate(`State` = rep(paste("Selected state: ", stateSelection[1], sep="")))
-      }else{
-        nTiles <- nTiles %>% mutate(`State` = rep("Selected states"))
-      }
-    }else{
-      nTiles <- nTiles %>% mutate(`State` = rep("Rest of U.S."))
-    }
-  }
-  
-  return(nTiles)
-  rm(rankInputs, rankOutputs, nTiles)
-}
-
-#### End #### 
-
-#### Create quintile datasets #### 
-
-quintiles.national <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", FALSE, c("None"), "Neither"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", FALSE, c("None"), "Neither") 
-)
-
-quintiles.louisiana <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("LA"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("LA"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("LA"), "Exclusive") 
-)
-
-quintiles.illinois <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IL"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IL"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IL"), "Exclusive") 
-)
-
-quintiles.texas <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("TX"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("TX"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("TX"), "Exclusive") 
-)
-
-quintiles.alabama <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("AL"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("AL"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("AL"), "Exclusive") 
-)
-
-quintiles.california <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("CA"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("CA"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("CA"), "Exclusive") 
-)
-
-quintiles.indiana <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IN"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("IN"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("IN"), "Exclusive") 
-)
-
-quintiles.newhampshire <- rbind(
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("NH"), "Inclusive"), 
-  calcPercentiles(districtData24, 5, "Class of 2024", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData23, 5, "Class of 2023", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData22, 5, "Class of 2022", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData21, 5, "Class of 2021", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData20, 5, "Class of 2020", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData19, 5, "Class of 2019", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData18, 5, "Class of 2018", TRUE, c("NH"), "Exclusive"), 
-  calcPercentiles(districtData17, 5, "Class of 2017", TRUE, c("NH"), "Exclusive") 
-)
-
-#### End #### 
-
-#### Write function to chart quintiles #### 
-
-quintilePlot <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYears){
-  
-  newTiles <- tilesDF
-  newVar <- tilesVar
-  
-  if(stateBreakout==TRUE){
-    newTiles <- newTiles %>% select(
-      `Class`,
-      `State`,
-      `Completions`, 
-      `Grade 12 students`,
-      all_of(tilesVar)
-    ) %>% rename(
-      `InterestVar` = tilesVar
-    ) 
-    analysis1 <- aggregate(data=newTiles, cbind(
-      `Completions`, 
-      `Grade 12 students`
-    ) ~ `InterestVar` + `State` + `Class`, FUN=sum) %>% mutate(
-      `FAFSA completion rate` = `Completions` / `Grade 12 students`
-    ) 
-    if(yearLever==TRUE){
-      analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
-    }
-    newVar <- gsub("Groups", "Quintile", newVar)
-    analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
-    analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
-    analysis1$State <- factor(analysis1$State)
-    analysis1$State <- factor(analysis1$State, levels=rev(levels(analysis1$State)))
-    analysis1$`For Tooltip` <- paste(
-      "State: ", gsub("Selected state: ", "", analysis1$State), '\n',
-      "Quintile of demographic variable: ", analysis1$`Tile`, '\n',
-      "Class: ", analysis1$`Class`, '\n',
-      "FAFSA Completion Rate: ", percent(analysis1$`FAFSA completion rate`, accuracy=0.1),
+    agg1 <- agg1 %>% mutate(
+      `Quintile` = as.character(`Quintile`)
+    )
+    agg1$State <- factor(agg1$State)
+    agg1$State <- factor(agg1$State, levels=rev(levels(agg1$State)))
+    agg1$`For Tooltip` <- paste(
+      "State: ", gsub("Selected state: ", "", agg1$State), '\n',
+      "Quintile of demographic variable: ", agg1$`Quintile`, '\n',
+      "Class: ", agg1$`Class`, '\n',
+      "FAFSA Completion Rate: ", percent(agg1$`FAFSA completion rate`, accuracy=0.1),
       sep=""
     )
-    figA <- ggplot(data=analysis1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Tile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + facet_grid(`State` ~ .) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.75)) + labs(x="Year", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
+    figA <- ggplot(data=agg1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Quintile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + facet_grid(`State` ~ .) + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.75)) + labs(x="Class", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
+    return(figA)
+    rm(figA)
     
-  }else{
-    newTiles <- newTiles %>% select(
-      `Class`,
-      `Completions`, 
-      `Grade 12 students`,
-      all_of(tilesVar)
-    ) %>% rename(
-      `InterestVar` = tilesVar
-    ) 
-    analysis1 <- aggregate(data=newTiles, cbind(
-      `Completions`, 
-      `Grade 12 students`
-    ) ~ `InterestVar` + `Class`, FUN=sum) %>% mutate(
-      `FAFSA completion rate` = `Completions` / `Grade 12 students`
-    ) 
-    if(yearLever==TRUE){
-      analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
-    }
-    newVar <- gsub("Groups", "Quintile", newVar)
-    analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
-    analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
-    analysis1$`For Tooltip` <- paste(
-      "Quintile of demographic variable: ", analysis1$`Tile`, '\n',
-      "Class: ", analysis1$`Class`, '\n',
-      "FAFSA Completion Rate: ", percent(analysis1$`FAFSA completion rate`, accuracy=0.1),
-      sep=""
-    )
-    figA <- ggplot(data=analysis1, mapping=aes(x=`Class`, y=`FAFSA completion rate`, fill=`Tile`, text=`For Tooltip`)) + geom_bar(stat="identity", position = "dodge2") + scale_y_continuous(labels=percent_format(accuracy=1), limits=c(0, 0.7)) + labs(x="Year", fill=newVar) + scale_fill_manual(values=colorRampPalette(colors = c("#8DAFCA", "blue4"))(5)) + theme(legend.position='bottom') 
   }
-  
-  return(figA)
-  rm(analysis1, newTiles, figA, newVar)
-}
-
-#### End #### 
-
-#### Write function to make table of Q1 and Q5 #### 
-
-onefiveTable <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYears){
-  
-  newTiles <- tilesDF
-  newVar <- tilesVar
-  
-  if(stateBreakout==TRUE){
-    newTiles <- newTiles %>% select(
-      `Class`,
-      `State`,
-      `Completions`, 
-      `Grade 12 students`,
-      all_of(tilesVar)
-    ) %>% rename(
-      `InterestVar` = tilesVar
-    ) 
-    analysis1 <- aggregate(data=newTiles, cbind(
-      `Completions`, 
-      `Grade 12 students`
-    ) ~ `InterestVar` + `State` + `Class`, FUN=sum) %>% mutate(
-      `FAFSA completion rate` = `Completions` / `Grade 12 students`
-    ) 
-    if(yearLever==TRUE){
-      analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
-    }
-    newVar <- gsub("Groups", "Quintile", newVar)
-    analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
-    analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
-    analysis1 <- analysis1 %>% filter(`Tile` %in% c("1st", "5th"))
-    analysis1$State <- factor(analysis1$State)
-    analysis1$State <- factor(analysis1$State, levels=rev(levels(analysis1$State)))
-    analysis1 <- analysis1 %>% pivot_wider(
+  if(outputType=="One-five table"){
+    
+    agg1 <- agg1 %>% filter(`Quintile` %in% c(1, 5)) %>% mutate(
+      `Quintile` = as.character(`Quintile`)
+    )
+    agg1$State <- factor(agg1$State)
+    agg1$State <- factor(agg1$State, levels=rev(levels(agg1$State)))
+    agg1 <- agg1 %>% pivot_wider(
       id_cols=c(`Class`, `State`), 
-      names_from=`Tile`, 
+      names_from=`Quintile`, 
       values_from=`FAFSA completion rate`
     ) 
-    analysis1 <- analysis1 %>% mutate(
-      `Percentage point difference` = `1st` - `5th`
+    agg1 <- agg1 %>% mutate(
+      `Percentage point difference` = `1` - `5`
     )
-    analysis1 <- analysis1 %>% arrange(
+    agg1 <- agg1 %>% arrange(
       `State`, `Class`
     ) %>% mutate(
       `Demographic` = rep(newVar),
-      `1st` = percent(`1st`, accuracy=0.1), 
-      `5th` = percent(`5th`, accuracy=0.1), 
+      `1` = percent(`1`, accuracy=0.1), 
+      `5` = percent(`5`, accuracy=0.1), 
       `Percentage point difference` = ifelse(
         `Percentage point difference` >= 0, 
-        paste("+", round(`Percentage point difference` * 100, 2), " pp", sep=""), 
-        paste("-", round(`Percentage point difference` * 100, 2), " pp", sep="")
+        paste("+", round(`Percentage point difference` * 100, 1), " pp", sep=""), 
+        paste("-", round(`Percentage point difference` * 100, 1), " pp", sep="")
       )
     ) %>% rename(
-      `FAFSA completion rate, 1st quintile of demographic` = `1st`, 
-      `FAFSA completion rate, 5th quintile of demographic` = `5th`
+      `FAFSA completion rate, 1st quintile of demographic` = `1`, 
+      `FAFSA completion rate, 5th quintile of demographic` = `5`
     ) %>% select(
       `Demographic`, 
       `State`, 
@@ -3838,137 +4305,178 @@ onefiveTable <- function(tilesDF, tilesVar, stateBreakout, yearLever, selectedYe
       `FAFSA completion rate, 5th quintile of demographic`,
       `Percentage point difference`
     )
-  }else{
-    newTiles <- newTiles %>% select(
-      `Class`,
-      `Completions`, 
-      `Grade 12 students`,
-      all_of(tilesVar)
-    ) %>% rename(
-      `InterestVar` = tilesVar
-    ) 
-    analysis1 <- aggregate(data=newTiles, cbind(
-      `Completions`, 
-      `Grade 12 students`
-    ) ~ `InterestVar` + `Class`, FUN=sum) %>% mutate(
-      `FAFSA completion rate` = `Completions` / `Grade 12 students`
-    ) 
-    if(yearLever==TRUE){
-      analysis1 <- analysis1 %>% filter(`Class` %in% selectedYears)
-    }
-    newVar <- gsub("Groups", "Quintile", newVar)
-    analysis1 <- left_join(x=analysis1, y=quintileDF, by="InterestVar")
-    analysis1$`Tile` <- factor(analysis1$`Tile`, levels=c("1st", "2nd", "3rd", "4th", "5th"))
-    analysis1 <- analysis1 %>% filter(`Tile` %in% c("1st", "5th"))
-    analysis1 <- analysis1 %>% pivot_wider(
-      id_cols=c(`Class`), 
-      names_from=`Tile`, 
-      values_from=`FAFSA completion rate`
-    ) 
-    analysis1 <- analysis1 %>% mutate(
-      `Percentage point difference` = `1st` - `5th`
-    )
-    analysis1 <- analysis1 %>% arrange(
-      `Class`
-    ) %>% mutate(
-      `Demographic` = rep(newVar),
-      `1st` = percent(`1st`, accuracy=0.1), 
-      `5th` = percent(`5th`, accuracy=0.1), 
-      `Percentage point difference` = ifelse(
-        `Percentage point difference` >= 0, 
-        paste("+", round(`Percentage point difference` * 100, 2), " pp", sep=""), 
-        paste("-", round(`Percentage point difference` * 100, 2), " pp", sep="")
-      )
-    ) %>% rename(
-      `FAFSA completion rate, 1st quintile of demographic` = `1st`, 
-      `FAFSA completion rate, 5th quintile of demographic` = `5th`
-    ) %>% select(
-      `Demographic`, 
-      `Class`, 
-      `FAFSA completion rate, 1st quintile of demographic`, 
-      `FAFSA completion rate, 5th quintile of demographic`,
-      `Percentage point difference`
-    )
+    return(agg1)
+    
   }
   
-  return(analysis1)
-  rm(analysis1, newTiles, newVar)
+  rm(fafsa1, frpl1, demo1, merge1, agg1)
 }
 
 #### End #### 
 
-#### Quintiles: FRPL share of enrollment ####
+#### Run function #### 
 
-pLA1 <- quintilePlot(quintiles.louisiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
+# Quintiles: FRPL share of enrollment
+selectedVarSetting <- "FRPL share of enrollment"
+calcOptionSetting <- "Option 2"
+outputTypeSetting <- "Quintile plot"
+pLA1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2017, year2 = 2018, selectedState = "LA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pIL1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2020, year2 = 2021, selectedState = "IL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pAL1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "AL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pTX1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "TX", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pCA1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2022, year2 = 2023, selectedState = "CA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pIN1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "IN", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pNH1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "NH", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
 
-pIL1 <- quintilePlot(quintiles.illinois, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
+# Quintiles: Black or Latino share of enrollment
+selectedVarSetting <- "Black or Latino share of enrollment"
+calcOptionSetting <- "Option 2"
+outputTypeSetting <- "Quintile plot"
+pLA2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2017, year2 = 2018, selectedState = "LA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pIL2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2020, year2 = 2021, selectedState = "IL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pAL2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "AL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pTX2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "TX", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pCA2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2022, year2 = 2023, selectedState = "CA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pIN2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "IN", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+pNH2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "NH", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
 
-pAL1 <- quintilePlot(quintiles.alabama, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
+# One-five table: FRPL share of enrollment
+selectedVarSetting <- "FRPL share of enrollment"
+calcOptionSetting <- "Option 2"
+outputTypeSetting <- "One-five table"
+yLA1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2017, year2 = 2018, selectedState = "LA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yIL1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2020, year2 = 2021, selectedState = "IL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yAL1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "AL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yTX1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "TX", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yCA1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2022, year2 = 2023, selectedState = "CA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yIN1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "IN", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yNH1 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "NH", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
 
-pTX1 <- quintilePlot(quintiles.texas, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-pCA1 <- quintilePlot(quintiles.california, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
-
-pIN1 <- quintilePlot(quintiles.indiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-
-pNH1 <- quintilePlot(quintiles.newhampshire, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
+# One-five table: Black or Latino share of enrollment
+selectedVarSetting <- "Black or Latino share of enrollment"
+calcOptionSetting <- "Option 2"
+outputTypeSetting <- "One-five table"
+yLA2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2017, year2 = 2018, selectedState = "LA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yIL2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2020, year2 = 2021, selectedState = "IL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yAL2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "AL", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yTX2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2021, year2 = 2022, selectedState = "TX", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yCA2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2022, year2 = 2023, selectedState = "CA", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yIN2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "IN", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
+yNH2 <- newFunction1(
+  fafsaData = altMethods, frplData = frpl, demoData = demoEnroll, 
+  year1 = 2023, year2 = 2024, selectedState = "NH", 
+  selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
+)
 
 #### End #### 
-
-#### Quintiles: Black or Latino share of enrollment ####
-
-pLA2 <- quintilePlot(quintiles.louisiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
-
-pIL2 <- quintilePlot(quintiles.illinois, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021")) 
-
-pAL2 <- quintilePlot(quintiles.alabama, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-pTX2 <- quintilePlot(quintiles.texas, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-pCA2 <- quintilePlot(quintiles.california, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
-
-pIN2 <- quintilePlot(quintiles.indiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
-
-pNH2 <- quintilePlot(quintiles.newhampshire, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
-
-#### End ####
-
-#### One-five table: FRPL share of enrollment ####
-
-yLA1 <- onefiveTable(quintiles.louisiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
-
-yIL1 <- onefiveTable(quintiles.illinois, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021"))
-
-yAL1 <- onefiveTable(quintiles.alabama, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022"))
-
-yTX1 <- onefiveTable(quintiles.texas, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-yCA1 <- onefiveTable(quintiles.california, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
-
-yIN1 <- onefiveTable(quintiles.indiana, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-
-yNH1 <- onefiveTable(quintiles.newhampshire, "Groups: FRPL share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024"))
-
-#### End #### 
-
-#### One-five table: Black or Latino share of enrollment ####
-
-yLA2 <- onefiveTable(quintiles.louisiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2017", "Class of 2018")) 
-
-yIL2 <- onefiveTable(quintiles.illinois, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2020", "Class of 2021")) 
-
-yAL2 <- onefiveTable(quintiles.alabama, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-yTX2 <- onefiveTable(quintiles.texas, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2021", "Class of 2022")) 
-
-yCA2 <- onefiveTable(quintiles.california, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2022", "Class of 2023")) 
-
-yIN2 <- onefiveTable(quintiles.indiana, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
-
-yNH2 <- onefiveTable(quintiles.newhampshire, "Groups: Black or Latino share of enrollment", TRUE, TRUE, c("Class of 2023", "Class of 2024")) 
-
-#### End ####
-
 
 ```
 
