@@ -2382,11 +2382,8 @@ processEnrollment <- function(filename, year0){
     `EF2MORT`
   ) %>% filter(
     `EFALEVEL` %in% c(
-      2, #	All students, Undergraduate total
       4, #	All students, Undergraduate, Degree/certificate-seeking, First-time
-      22, #	Full-time students, Undergraduate total
       24, #	Full-time students, Undergraduate, Degree/certificate-seeking, First-time
-      42, #	Part-time students, Undergraduate total
       44 #	Part-time students, Undergraduate, Degree/certificate-seeking, First-time
     )
   ) %>% mutate(
@@ -2466,18 +2463,12 @@ processEnrollment <- function(data0, state0, year1, year2, students, demographic
     )
   ) 
   
-  if(students == "Undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 2)}
   if(students == "First-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 4)}
-  if(students == "Full-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 22)}
   if(students == "Full-time first-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 24)}
-  if(students == "Part-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 42)}
   if(students == "Part-time first-time undergraduates"){data1 <- data1 %>% filter(`EFALEVEL` == 44)}
   if(students %in% c(
-    "Undergraduates", 
     "First-time undergraduates", 
-    "Full-time undergraduates", 
     "Full-time first-time undergraduates",
-    "Part-time undergraduates",
     "Part-time first-time undergraduates"
   )==FALSE){data1 <- data1 %>% filter(`EFALEVEL` == 9999999)}
   
@@ -2566,86 +2557,65 @@ processEnrollment <- function(data0, state0, year1, year2, students, demographic
 
 #### Run function: All undergraduates by race/ethnicity ####
 
-# All undergraduates by race/ethnicity: TOTL
-enroll.TOTL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.TOTL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: TOTL
+enroll.TOTL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+enroll.TOTL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: ASIA
-enroll.ASIA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
-enroll.ASIA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: ASIA
+enroll.ASIA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
+enroll.ASIA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: BKAA
-enroll.BKAA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
-enroll.BKAA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: BKAA
+enroll.BKAA.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
+enroll.BKAA.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: HISP
-enroll.HISP.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
-enroll.HISP.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: HISP
+enroll.HISP.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
+enroll.HISP.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: AIAN
-enroll.AIAN.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
-enroll.AIAN.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: AIAN
+enroll.AIAN.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
+enroll.AIAN.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: NHPI
-enroll.NHPI.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
-enroll.NHPI.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: NHPI
+enroll.NHPI.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
+enroll.NHPI.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: WHIT
-enroll.WHIT.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
-enroll.WHIT.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: WHIT
+enroll.WHIT.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
+enroll.WHIT.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=FALSE)
 
-# All undergraduates by race/ethnicity: 2MOR
-enroll.2MOR.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
-enroll.2MOR.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+# All First-time undergraduates by race/ethnicity: 2MOR
+enroll.2MOR.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
+enroll.2MOR.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=FALSE)
 
 #### End #### 
 
-#### Run function: Full-time & first-time status ####
-
-# All undergraduate students: TOTL
-enroll.UG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.UG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-
-# First-time undergraduate students: TOTL
-enroll.1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-
-# Full-time undergraduate students: TOTL
-enroll.FTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.FTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
+#### Run function: Full-time status ####
 
 # Full-time, first-time undergraduate students: TOTL
 enroll.FT1TUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
@@ -2653,13 +2623,6 @@ enroll.FT1TUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020,
 enroll.FT1TUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 enroll.FT1TUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 enroll.FT1TUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-
-# Part-time undergraduate students: TOTL
-enroll.PTUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
-enroll.PTUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
 
 # Part-time, first-time undergraduate students: TOTL
 enroll.PT1GUG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=FALSE)
@@ -2672,34 +2635,34 @@ enroll.PT1GUG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022,
 
 #### Run function: Pell share of undergraduates ####
 
-# All undergraduates by Pell share: TOTL
-enroll.PCTPELL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
-enroll.PCTPELL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+# All First-time undergraduates by Pell share: TOTL
+enroll.PCTPELL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
+enroll.PCTPELL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Institutional control ####
 
-# All undergraduates by institutional control: TOTL
-enroll.CONTROL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
-enroll.CONTROL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+# All First-time undergraduates by institutional control: TOTL
+enroll.CONTROL.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
+enroll.CONTROL.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=FALSE)
 
 #### End #### 
 
 #### Run function: Predominant degree awarded ####
 
-# All undergraduates by predominant degree awarded: TOTL
-enroll.PREDDEG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
-enroll.PREDDEG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+# All First-time undergraduates by predominant degree awarded: TOTL
+enroll.PREDDEG.LA <- processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.IL <- processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.AL <- processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.TX <- processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
+enroll.PREDDEG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=FALSE) %>% filter(`Variable` %in% c(1, 2, 3))
 
 #### End #### 
 
@@ -2707,68 +2670,54 @@ enroll.PREDDEG.CA <- processEnrollment(data0=enrollment, state0="CA", year1=2022
 
 enroll.totals <- rbind(
   
-  # All undergraduates by race/ethnicity: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: ASIA
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: ASIA
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="ASIA", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: BKAA
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: BKAA
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="BKAA", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: HISP
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: HISP
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="HISP", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: AIAN
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: AIAN
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="AIAN", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: NHPI
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: NHPI
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="NHPI", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: WHIT
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by race/ethnicity: WHIT
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="WHIT", interestVar="None", printTotals=TRUE),
-  
-  # All undergraduates by race/ethnicity: 2MOR
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
-  
-  # All undergraduate students: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
+  # All First-time undergraduates by race/ethnicity: 2MOR
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="2MOR", interestVar="None", printTotals=TRUE),
   
   # First-time undergraduate students: TOTL
   processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
@@ -2777,26 +2726,12 @@ enroll.totals <- rbind(
   processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   
-  # Full-time undergraduate students: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  
   # Full-time, first-time undergraduate students: TOTL
   processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Full-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  
-  # Part-time undergraduate students: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   
   # Part-time, first-time undergraduate students: TOTL
   processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
@@ -2805,26 +2740,26 @@ enroll.totals <- rbind(
   processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Part-time first-time undergraduates", demographic="TOTL", interestVar="None", printTotals=TRUE),
   
-  # All undergraduates by Pell share: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
+  # All First-time undergraduates by Pell share: TOTL
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="PCTPELL", printTotals=TRUE),
   
-  # All undergraduates by institutional control: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
+  # All First-time undergraduates by institutional control: TOTL
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="CONTROL", printTotals=TRUE),
   
-  # All undergraduates by predominant degree awarded: TOTL
-  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
-  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
-  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
-  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
-  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="Undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3))
+  # All First-time undergraduates by predominant degree awarded: TOTL
+  processEnrollment(data0=enrollment, state0="LA", year1=2017, year2=2018, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
+  processEnrollment(data0=enrollment, state0="IL", year1=2020, year2=2021, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
+  processEnrollment(data0=enrollment, state0="AL", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
+  processEnrollment(data0=enrollment, state0="TX", year1=2021, year2=2022, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3)),
+  processEnrollment(data0=enrollment, state0="CA", year1=2022, year2=2023, students="First-time undergraduates", demographic="TOTL", interestVar="PREDDEG", printTotals=TRUE) %>% filter(`Variable` %in% c(1, 2, 3))
   
 )
 
