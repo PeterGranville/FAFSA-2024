@@ -698,6 +698,7 @@ altMethods <- mergeAll
 # The rest do not: 
 mergeAll <- mergeAll %>% select(-(`LEAID`))
 calSoap <- mergeAll
+compRateChange <- mergeAll
 
 #### End #### 
 
@@ -4413,6 +4414,42 @@ yNH2 <- newFunction1(
 
 #### End #### 
 
+########################################
+#### For Table 2 in report          #### 
+########################################
+
+#### Comp rate change (Table 2) ####
+
+findCompChange <- function(data0, stateName, year1, year2){
+  
+  data1 <- data0 %>% filter(
+    `State` != stateName, 
+    `Year` %in% c(year1, year2)
+  )
+  
+  data1 <- aggregate(
+    data=data1, cbind(
+      `Completions`, 
+      `Grade 12 students`
+    ) ~ `Year`, FUN=sum
+  ) %>% mutate(
+    `FAFSA completion rate` = percent(`Completions` / `Grade 12 students`, accuracy=0.1)
+  ) 
+  
+  return(data1)
+  
+}
+
+findCompChange(compRateChange, "LA", "Class of 2017", "Class of 2018")
+findCompChange(compRateChange, "IL", "Class of 2020", "Class of 2021")
+findCompChange(compRateChange, "AL", "Class of 2021", "Class of 2022")
+findCompChange(compRateChange, "TX", "Class of 2021", "Class of 2022")
+findCompChange(compRateChange, "CA", "Class of 2022", "Class of 2023")
+findCompChange(compRateChange, "IN", "Class of 2023", "Class of 2024")
+findCompChange(compRateChange, "NH", "Class of 2023", "Class of 2024")
+
+#### End #### 
+
 ```
 
 This appendix contains the tables used in our full report. Each set of tables contains a "Data Source and Notes" tab containing methodological details. For the full methods used, see the methods document [here](https://docs.google.com/document/d/1SkZ9OzfMQQcvnTz2AEVRnx4WPu8ybv-yCd_n3ZpiIM4/edit?usp=sharing). 
@@ -4536,7 +4573,7 @@ Source: Author’s analysis of data from the Federal Student Aid Data Center, re
 
 ###  {.unnumbered}
 
-Tables A1 through A9 inform Table 1 in the report. 
+Tables A1 through A9 inform Table 2 in the report. 
 
 ---
 
@@ -4757,7 +4794,7 @@ Notes: Below each chart is the demographic variable of interest. The 1st quintil
 
 ###  {.unnumbered}
 
-Figures B1 through B7 inform Table 3 in the report. 
+Figures B1 through B7 inform the section "How Do FAFSA Completion Rate Changes Vary by Demographics?" in the report. 
 
 ---
 
@@ -4913,7 +4950,7 @@ Notes: The "Completion rate bracket" refers to a high school's FAFSA completion 
 
 ###  {.unnumbered}
 
-Tables C1 through C7 inform Table 2 in the report. 
+Tables C1 through C7 inform Table 3 in the report. 
 
 ## Changes in Pell Grants Within One Year of Implementation
 
@@ -5323,7 +5360,7 @@ Notes: The maximum window of comparison uses the last year before policy enactme
 
 ###  {.unnumbered}
 
-Tables D1 through D6 inform Table 4 in the report. 
+Tables D1 through D6 inform Table 5 in the report. 
 
 ---
 
@@ -5736,7 +5773,7 @@ Notes: "Pell share" refers to the "PCTPELL" variable in the College Scorecard, w
 
 ###  {.unnumbered}
 
-Tables E1 through E6 inform Table 5 in the report. 
+Tables E1 through E6 inform Table 6 in the report. 
 
 ---
 
@@ -5799,7 +5836,7 @@ comp1 <- comp1 %>% mutate(
 kable(comp1) %>% kable_paper("hover", full_width = F)
 ```
 
-#### Mixed-Status Families
+#### Noncitizen Contributors
 
 ##### Table F3: Estimated U.S. citizens living with a noncitizen adult family member, nationwide and in mandatory FAFSA states
 
@@ -5854,15 +5891,13 @@ Source: author's analysis of data from the U.S. Department of Education's Common
 
 Source: Author's analysis of data from the Federal Student Aid Data Center, reflecting public high school seniors’ completions as of July 31 each year. Only high schools in California are included. We derived the list of high schools that are members of a Cal-SOAP consortium from Cal-SOAP consortia websites. We were unable to obtain information for the East Bay & Solano County Consortium. The websites for the San Bernardino County Consortium and the San Diego & Imperial Counties Consortium only listed district names and not high school names, so we included all public high schools within the listed districts. The lists of high schools for the Riverside County Consortium and the Sacramento Consortium were received via email correspondence. 
 
-**Mixed-Status Families**
+**Noncitizen Contributors**
 
 Source: Author's analysis of 1-Year American Community Survey (ACS) Public Use Microdata Sample (PUMS) datasets from the U.S. Census Bureau, reflecting survey year 2023. Data reflecting group quarters is excluded. To calculate these figures, we first identified subfamilies in the PUMS dataset containing a noncitizen adult (aged 32+) and a chid who would likely be counted as dependent if they filed the FAFSA (see below for more details). Totals are rounded to the nearest 1,000.  
 
-Notes: Individuals are typically treated as dependent for FAFSA-filing purposes until they are aged 24, married, or enrolled in graduate school. The second column of Table F3 reflects citizens who are aged 17 to 23, are not married, and who are not enrolled in graduate school. The third table of column F3 reflects citizens who are enrolled in grade 12 and are not married. 
-
 ###  {.unnumbered}
 
-Table F1 informs the introduction to the report, Table F2 informs Table 6 in the report, and Table F3 informs Table 7 in the report. 
+Table F1 informs the introduction to the report, Table F2 informs Table 7 in the report, and Table F3 informs Table 8 in the report. 
 
 ---
 
@@ -6006,7 +6041,7 @@ Notes: Below each chart is the demographic variable of interest. The 1st quintil
 
 ###  {.unnumbered}
 
-These numbers are used for comparison with Figures B1 through B7. 
+Tables G1 through G7 inform Table 4 in the report. 
 
 ---
 

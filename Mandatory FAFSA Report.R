@@ -682,6 +682,7 @@ altMethods <- mergeAll
 # The rest do not: 
 mergeAll <- mergeAll %>% select(-(`LEAID`))
 calSoap <- mergeAll
+compRateChange <- mergeAll
 
 #### End #### 
 
@@ -4394,5 +4395,41 @@ yNH2 <- newFunction1(
   year1 = 2023, year2 = 2024, selectedState = "NH", 
   selectedVar = selectedVarSetting, calcOption = calcOptionSetting, outputType = outputTypeSetting
 )
+
+#### End #### 
+
+########################################
+#### For Table 2 in report          #### 
+########################################
+
+#### Comp rate change (Table 2) ####
+
+findCompChange <- function(data0, stateName, year1, year2){
+  
+  data1 <- data0 %>% filter(
+    `State` != stateName, 
+    `Year` %in% c(year1, year2)
+  )
+  
+  data1 <- aggregate(
+    data=data1, cbind(
+      `Completions`, 
+      `Grade 12 students`
+    ) ~ `Year`, FUN=sum
+  ) %>% mutate(
+    `FAFSA completion rate` = percent(`Completions` / `Grade 12 students`, accuracy=0.1)
+  ) 
+  
+  return(data1)
+  
+}
+
+findCompChange(compRateChange, "LA", "Class of 2017", "Class of 2018")
+findCompChange(compRateChange, "IL", "Class of 2020", "Class of 2021")
+findCompChange(compRateChange, "AL", "Class of 2021", "Class of 2022")
+findCompChange(compRateChange, "TX", "Class of 2021", "Class of 2022")
+findCompChange(compRateChange, "CA", "Class of 2022", "Class of 2023")
+findCompChange(compRateChange, "IN", "Class of 2023", "Class of 2024")
+findCompChange(compRateChange, "NH", "Class of 2023", "Class of 2024")
 
 #### End #### 
